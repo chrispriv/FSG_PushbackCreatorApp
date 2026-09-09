@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FSG_PushbackCreator.Pages.HomePage"
+             Title="Pushback Creator App">
+
+    <ScrollView Padding="16,16,28,16">
+        <VerticalStackLayout Spacing="12">
+            <Label Text="Add extra pushback parking slots and helipads for Aerofly FSG Mobile and FS4 PC."
+                   Style="{StaticResource SubHeadline}" />
+
+            <Button Text="New"
+                    Clicked="OnNewProject"
+                    HorizontalOptions="Fill" />
+            <Button Text="Open TME (FSG)"
+                    Clicked="OnOpenTme"
+                    HorizontalOptions="Fill" />
+            <Button Text="Open ZIP (FS4)"
+                    Clicked="OnOpenZip"
+                    HorizontalOptions="Fill" />
+
+            <Label Text="New starts an empty project. Open TME loads an FSG package. Open ZIP loads an FS4 scenery zip (package\airports\…). Export TME writes a Unix Store .tme; Export ZIP (FS4) writes a normal Windows zip to unpack into addons\scenery. On Android, Open and Export use the system file picker so you choose the folder."
+                   Margin="0,4,0,0" />
+
+            <Border Stroke="{StaticResource Gray600Brush}"
+                    StrokeThickness="1"
+                    BackgroundColor="{StaticResource CardElevated}"
+                    Padding="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="6" />
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="4,*">
+                    <BoxView Color="{StaticResource LinkBlue}" />
+                    <VerticalStackLayout Grid.Column="1" Padding="12,10" Spacing="4">
+                        <Label Text="Google Earth"
+                               TextColor="{StaticResource LinkBlue}"
+                               FontAttributes="Bold"
+                               FontSize="12" />
+                        <Label Text="Place named markers (for example UBBN-A1) and copy those coordinates into this app. Unique names make it easy to correct a position later."
+                               Style="{StaticResource FieldCaption}"
+                               Margin="0" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

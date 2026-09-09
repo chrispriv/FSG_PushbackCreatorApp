@@ -1,0 +1,24 @@
+﻿<maui:MauiWinUIApplication
+    x:Class="FSG_PushbackCreator.WinUI.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:maui="using:Microsoft.Maui"
+    xmlns:local="using:FSG_PushbackCreator.WinUI"
+    RequestedTheme="Dark">
+
+    <maui:MauiWinUIApplication.Resources>
+        <ResourceDictionary>
+            <SolidColorBrush x:Key="TogglePaneButtonBackground" Color="#1A1A1A" />
+            <SolidColorBrush x:Key="TogglePaneButtonBackgroundPointerOver" Color="#333333" />
+            <SolidColorBrush x:Key="TogglePaneButtonBackgroundPressed" Color="#333333" />
+            <SolidColorBrush x:Key="TogglePaneButtonBackgroundDisabled" Color="#1A1A1A" />
+            <SolidColorBrush x:Key="NavigationViewButtonBackgroundPointerOver" Color="#333333" />
+            <SolidColorBrush x:Key="NavigationViewButtonBackgroundPressed" Color="#333333" />
+            <SolidColorBrush x:Key="NavigationViewItemForeground" Color="#EEEEEE" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundPointerOver" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundPressed" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundDisabled" Color="#AAAAAA" />
+        </ResourceDictionary>
+    </maui:MauiWinUIApplication.Resources>
+
+</maui:MauiWinUIApplication>

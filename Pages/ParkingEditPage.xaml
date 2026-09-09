@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FSG_PushbackCreator.Pages.ParkingEditPage"
+             Title="Parking slot">
+
+    <Grid RowDefinitions="*,Auto"
+          Padding="16"
+          RowSpacing="12"
+          MaximumWidthRequest="1194"
+          HorizontalOptions="Center">
+
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Parking position (Google Earth decimal or DMS)" Style="{StaticResource FieldCaption}" />
+                <Entry x:Name="PositionEntry"
+                       Placeholder="40.4675, 50.0539 or 40°28'02.88&quot;N 50°03'13.86&quot;E"
+                       Keyboard="Text" />
+
+                <Label Text="Parking heading (deg), default 0" Style="{StaticResource FieldCaption}" />
+                <Entry x:Name="HeadingEntry" Keyboard="Numeric" />
+
+                <Label Text="Parking size, default 35" Style="{StaticResource FieldCaption}" />
+                <Entry x:Name="SizeEntry" Keyboard="Numeric" />
+
+                <Label Text="Parking name (gate), e.g. A1" Style="{StaticResource FieldCaption}" />
+                <Entry x:Name="NameEntry" Placeholder="A1" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="8">
+            <Button Text="Save" Clicked="OnSave" />
+            <Button Grid.Column="1"
+                    Text="Cancel"
+                    Style="{StaticResource QuietButton}"
+                    Clicked="OnCancel" />
+        </Grid>
+    </Grid>
+</ContentPage>

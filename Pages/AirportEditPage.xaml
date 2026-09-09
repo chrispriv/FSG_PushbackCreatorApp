@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FSG_PushbackCreator.Models"
+             x:Class="FSG_PushbackCreator.Pages.AirportEditPage"
+             Title="Airport">
+
+    <Grid RowDefinitions="*,Auto"
+          Padding="16"
+          RowSpacing="12"
+          MaximumWidthRequest="1194"
+          HorizontalOptions="Center">
+
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Spacing="8">
+                <Label x:Name="KindLabel" Style="{StaticResource SubHeadline}" />
+
+                <Label Text="ICAO (4 characters)" Style="{StaticResource FieldCaption}" />
+                <Entry x:Name="IcaoEntry"
+                       MaxLength="4"
+                       Placeholder="e.g. UBBN or CH99"
+                       Keyboard="Text"
+                       TextChanged="OnIcaoChanged" />
+                <Label x:Name="TmeCodeLabel" />
+
+                <VerticalStackLayout x:Name="NameBlock" Spacing="8">
+                    <Label Text="Heliport name (Shown in Location map, max. 32)" Style="{StaticResource FieldCaption}" />
+                    <Entry x:Name="NameEntry"
+                           MaxLength="32"
+                           Placeholder="Shown above the ICAO code on the map"
+                           Keyboard="Text" />
+                </VerticalStackLayout>
+
+                <Label Text="Helipad position (Google Earth decimal or DMS)" Style="{StaticResource FieldCaption}" />
+                <Entry x:Name="HelipadPositionEntry"
+                       Placeholder="40.4675, 50.0539 or 40°28'02.88&quot;N 50°03'13.86&quot;E"
+                       Keyboard="Text" />
+
+                <Label Text="Helipad heading (deg), default 0" Style="{StaticResource FieldCaption}" />
+                <Entry x:Name="HelipadHeadingEntry" Keyboard="Numeric" />
+
+                <Label Text="Pushback parking slots" Style="{StaticResource SubHeadline}" Margin="0,16,0,0" />
+                <Button x:Name="NewParkingButton"
+                        Text="New parking slot"
+                        Clicked="OnNewParking"
+                        HorizontalOptions="Fill" />
+                <Label x:Name="ParkingHintLabel" />
+
+                <CollectionView x:Name="ParkingList" SelectionMode="None" HeightRequest="280">
+                    <CollectionView.EmptyView>
+                        <Label Text="No parking slots yet."
+                               Margin="0,12,0,0" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:ParkingSlot">
+                            <VerticalStackLayout Padding="0,6" Spacing="4">
+                                <Label Text="{Binding ListSummary}" LineBreakMode="TailTruncation" />
+                                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                                    <Button Text="Edit" Clicked="OnEditParking" CommandParameter="{Binding .}" />
+                                    <Button Grid.Column="1"
+                                            Text="Delete"
+                                            Style="{StaticResource QuietButton}"
+                                            Clicked="OnDeleteParking"
+                                            CommandParameter="{Binding .}" />
+                                </Grid>
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="8">
+            <Button Text="Save" Clicked="OnSave" />
+            <Button Grid.Column="1"
+                    Text="Cancel"
+                    Style="{StaticResource QuietButton}"
+                    Clicked="OnCancel" />
+        </Grid>
+    </Grid>
+</ContentPage>
