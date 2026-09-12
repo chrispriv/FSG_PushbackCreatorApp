@@ -24,16 +24,17 @@
                    Unfocused="OnPackageNameUnfocused" />
         </VerticalStackLayout>
 
-        <Button Grid.Row="2"
-                Text="New"
-                Clicked="OnNewAirport"
-                HorizontalOptions="Start" />
+        <Grid Grid.Row="2" ColumnDefinitions="*,*,*" ColumnSpacing="8">
+            <Button Text="New" Clicked="OnNewAirport" />
+            <Button Grid.Column="1" Text="Add TME (FSG)" Clicked="OnAddTme" />
+            <Button Grid.Column="2" Text="Add ZIP (FS4)" Clicked="OnAddZip" />
+        </Grid>
 
         <CollectionView x:Name="AirportList"
                         Grid.Row="3"
                         SelectionMode="None">
             <CollectionView.EmptyView>
-                <Label Text="No airports yet. Use New to add a pushback airport or a heliport."
+                <Label Text="No airports yet. Use New, or Add TME / Add ZIP to merge airports from another package."
                        Margin="0,24,0,0" />
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
@@ -58,7 +59,7 @@
                 <Button Text="Export TME" Clicked="OnExportTme" />
                 <Button Grid.Column="1" Text="Export ZIP (FS4)" Clicked="OnExportZip" />
             </Grid>
-            <Button Text="Cancel"
+            <Button Text="Quit project"
                     Style="{StaticResource QuietButton}"
                     Clicked="OnCancel"
                     HorizontalOptions="Fill" />

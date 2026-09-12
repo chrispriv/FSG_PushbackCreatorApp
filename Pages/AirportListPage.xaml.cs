@@ -90,6 +90,54 @@ public partial class AirportListPage : ContentPage, IShellBackHandler
 		await Shell.Current.GoToAsync($"airport?airportId={airport.Id}");
 	}
 
+	async void OnAddTme(object? sender, EventArgs e) => await MergeArchiveAsync("Add TME (FSG)", ".tme");
+
+	async void OnAddZip(object? sender, EventArgs e) => await MergeArchiveAsync("Add ZIP (FS4)", ".zip");
+
+	async Task MergeArchiveAsync(string title, string extension)
+	{
+		try
+		{
+			await using var stream = await TmeFilePicker.PickOpenStreamAsync(extension);
+			if (stream is null)
+				return;
+
+			var imported = TmeArchiveReader.Read(stream);
+			var added = 0;
+			var skippedExisting = 0;
+			foreach (var airport in imported.Project.Airports)
+			{
+				if (ProjectSession.Current.Airports.Any(a =>
+				        string.Equals(a.TmeCode, airport.TmeCode, StringComparison.OrdinalIgnoreCase)))
+				{
+					skippedExisting++;
+					continue;
+				}
+
+				ProjectSession.Current.Airports.Add(airport);
+				added++;
+			}
+
+			if (added > 0)
+				ProjectSession.MarkDirty();
+
+			AirportList.ItemsSource = null;
+			AirportList.ItemsSource = ProjectSession.Current.Airports;
+
+			var other = imported.SkippedCount == 0
+				? string.Empty
+				: $" {imported.SkippedCount} other zip entries were skipped.";
+			var dup = skippedExisting == 0
+				? string.Empty
+				: $" {skippedExisting} airport(s) already in this project were skipped.";
+			await DisplayAlert(title, $"Added {added} airport(s).{dup}{other}", "OK");
+		}
+		catch (Exception ex)
+		{
+			await DisplayAlert(title, ex.Message, "OK");
+		}
+	}
+
 	async void OnEdit(object? sender, EventArgs e)
 	{
 		if (sender is not Button { CommandParameter: AirportEntry airport })

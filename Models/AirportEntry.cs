@@ -26,6 +26,7 @@ public sealed class AirportEntry : ObservableEntity
 			if (Set(ref _kind, value))
 			{
 				Raise(nameof(TmeCode));
+				Raise(nameof(FileIcao));
 				Raise(nameof(KindLabel));
 				Raise(nameof(ListSummary));
 			}
@@ -41,15 +42,21 @@ public sealed class AirportEntry : ObservableEntity
 			if (Set(ref _icao4, next))
 			{
 				Raise(nameof(TmeCode));
+				Raise(nameof(FileIcao));
 				Raise(nameof(ListSummary));
 			}
 		}
 	}
 
-	/// <summary>4 characters for a heliport, 6 characters (ICAO + 00) for a dummy pushback airport.</summary>
+	/// <summary>4 characters for a heliport, 6 characters (ICAO + 00) for folder and file names of a dummy pushback airport.</summary>
 	public string TmeCode => Kind == AirportKind.Heliport
 		? Icao4
 		: string.IsNullOrEmpty(Icao4) ? string.Empty : Icao4 + "00";
+
+	/// <summary>ICAO written into TSC/WAD. Pushback airports use two trailing spaces instead of 00.</summary>
+	public string FileIcao => Kind == AirportKind.Heliport || string.IsNullOrEmpty(Icao4)
+		? Icao4
+		: Icao4 + "  ";
 
 	public string FolderName => TmeCode.ToLowerInvariant();
 

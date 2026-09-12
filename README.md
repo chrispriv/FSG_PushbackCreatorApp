@@ -2,22 +2,22 @@
 
 A .NET MAUI 9 app to add extra pushback parking slots and helipads for Aerofly FSG Mobile and FS4 PC. User interface, tutorials, and changelogs stay in English.
 
-**Version:** 1.0.0 TEST
+**Version:** 1.1.0
 
 ## What this build does
 
 Four screens:
 
 1. **Home** — **New**, **Open TME (FSG)**, **Open ZIP (FS4)**.
-2. **Airports** — project package name, list, new pushback airport or heliport, edit, delete, **Export TME**, **Export ZIP (FS4)**.
-3. **Airport** — 4-character code (pushback airports become `ICAO` + `00`, heliports stay 4 characters), heliport name on the Location map (max 32), helipad position/heading, parking list. Heliports cannot add parking slots. Helipad radius is always 20 in the TSC/WAD (not shown in the form).
+2. **Airports** — project package name, list, **New**, **Add TME (FSG)** / **Add ZIP (FS4)** (merge extra airports into this project; duplicate TME codes are skipped), edit, delete, **Export TME**, **Export ZIP (FS4)**, **Quit project**.
+3. **Airport** — 4-character code (folder/file names for pushback airports are `ICAO` + `00`, heliports stay 4 characters), optional `[sname]` (empty uses the TME code), helipad position/heading, parking list. Heliports cannot add parking slots. Helipad radius is always 20 in the TSC/WAD (not shown in the form).
 4. **Parking slot** — position, heading (default 0), size (default 35), gate name (suggested `A1`, `A2`, …).
 
 Helipad position is also the dummy pushback airport position. A dummy pushback airport needs that helipad or FSG will not show the extra parking.
 
 **Export ZIP (FS4)** writes a normal Windows zip: `package\airports\{code}\`. Unpack that folder into Aerofly FS4 `addons\scenery\`.
 
-**Export TME** writes an Info-ZIP **Store** archive with Unix metadata (same style as FSG-readable packages). The first folder inside the TME is the project package name (editable on the airport list; **New** suggests `pca_scenery_pushback`, Open fills it from the file). Dummy pushback airports write `[sname]` as ICAO + `00`. Heliports write the same map name in `[sname]` (Location map) and `[lname]` (Change Location dialog), max 32 characters.
+**Export TME** writes an Info-ZIP **Store** archive with Unix metadata (same style as FSG-readable packages). The first folder inside the TME is the project package name (editable on the airport list; **New** suggests `pca_scenery_pushback`, Open fills it from the file). Dummy pushback airports use folder/file names `ICAO` + `00`, but TSC/WAD `[icao]` is the 4-character code plus two spaces (not `00`) so Aerofly labels the place more cleanly. `[sname]` is the optional map name (max 32); if left empty it defaults to the TME code (`ICAO00` for pushback, 4 characters for heliports). Heliports also write the same map name in `[lname]`. Every TSC/WAD section that opens with `<` without a trailing `>` on that line is closed with a matching `>`.
 
 WAD conversion (CalcES RAD mode, west/south negative):
 
@@ -28,7 +28,7 @@ WAD conversion (CalcES RAD mode, west/south negative):
 
 Paste Google Earth **decimal** (`lat, lon` or `lat lon`) or **DMS** (`40°28'02.88"N 50°03'13.86"E`, space or comma). Values are stored as decimal. TSC `lon lat` is still accepted when the first number is outside ±90.
 
-Airport and parking screens use **Save** / **Cancel** at the bottom. The mobile Shell back arrow uses the same Cancel path, including the unsaved-changes warning. Cancel on the airport list closes the project and warns if changes were not exported as a TME file. **Export TME** writes the Store ZIP. **Open TME** reads `.tsc` entries (degrees); `.wad` is regenerated on the next export.
+Airport and parking screens use **Save** / **Cancel** at the bottom. The mobile Shell back arrow uses the same Cancel path, including the unsaved-changes warning. **Quit project** on the airport list closes the project and warns if changes were not exported. **Export TME** writes the Store ZIP. **Open TME / Open ZIP** (and **Add TME / Add ZIP**) take the 4-character ICAO from the airport folder name or `.tsc` file name (first four characters) and import `[sname]` when it is not just the ICAO / TME code. Pushback vs heliport is decided by whether any parking block has `[tags][pushback]`. The next export always uses this app’s layout (`ICAO00` dummy folders, `[icao]` with two spaces for pushback, 4-character heliports). `.wad` is regenerated on export.
 
 ## Open in Visual Studio 2022
 

@@ -28,8 +28,8 @@
 		<ApplicationId>com.chrispriv.fsgpushbackcreator</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
-		<ApplicationVersion>100</ApplicationVersion>
+		<ApplicationDisplayVersion>1.1.0</ApplicationDisplayVersion>
+		<ApplicationVersion>101</ApplicationVersion>
 
 		<!-- Sideload APK (Release): ARM32/ARM64/x64, complete package. Debug leaves the RID to Visual Studio so the emulator gets a small x64 build. -->
 		<RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' AND '$(Configuration)' == 'Release'">android-arm;android-arm64;android-x64</RuntimeIdentifiers>

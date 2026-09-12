@@ -24,10 +24,10 @@
                 <Label x:Name="TmeCodeLabel" />
 
                 <VerticalStackLayout x:Name="NameBlock" Spacing="8">
-                    <Label Text="Heliport name (Shown in Location map, max. 32)" Style="{StaticResource FieldCaption}" />
+                    <Label x:Name="NameCaptionLabel" Style="{StaticResource FieldCaption}" />
                     <Entry x:Name="NameEntry"
                            MaxLength="32"
-                           Placeholder="Shown above the ICAO code on the map"
+                           Placeholder="Optional. Empty uses the TME code."
                            Keyboard="Text" />
                 </VerticalStackLayout>
 

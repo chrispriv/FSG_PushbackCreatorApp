@@ -54,15 +54,17 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		_snapshot = AirportSnapshot.Capture(_airport);
 		KindLabel.Text = _airport.Kind == AirportKind.Heliport
 			? "Heliport — TME code stays 4 characters. Parking slots are not used. The name appears on the Change Location map above the ICAO code."
-			: "Dummy pushback airport — TME code is ICAO + 00. Helipad position is also the airport position. The map title uses that code (no separate name).";
+			: "Dummy pushback airport — folder/file names are ICAO + 00. TSC/WAD [icao] uses ICAO plus two spaces. Helipad position is also the airport position.";
 		NewParkingButton.IsEnabled = _airport.Kind != AirportKind.Heliport;
 		ParkingHintLabel.Text = _airport.Kind == AirportKind.Heliport
 			? "A 4-character heliport has a helipad only."
 			: "A dummy pushback airport should add at least one pushback slot.";
-		NameBlock.IsVisible = _airport.Kind == AirportKind.Heliport;
+		NameCaptionLabel.Text = _airport.Kind == AirportKind.Heliport
+			? "Heliport name (shown in Location map, max. 32, optional)"
+			: "Airport name [sname] (shown in Location map, max. 32, optional)";
 		IcaoEntry.Text = _airport.Icao4;
 		UpdateTmeCodeLabel();
-		NameEntry.Text = _airport.Kind == AirportKind.Heliport ? _airport.Name : string.Empty;
+		NameEntry.Text = _airport.Name;
 		HelipadPositionEntry.Text = GeoCoordinateParser.Format(_airport.HelipadLatitude, _airport.HelipadLongitude);
 		HelipadHeadingEntry.Text = _airport.HelipadHeading.ToString("0.###", CultureInfo.InvariantCulture);
 		RefreshParkingList();
@@ -121,9 +123,7 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			return false;
 		}
 
-		_airport.Name = _airport.Kind == AirportKind.Heliport
-			? ProjectValidator.ClampSname(NameEntry.Text)
-			: string.Empty;
+		_airport.Name = ProjectValidator.ClampSname(NameEntry.Text);
 		_airport.HelipadLatitude = lat;
 		_airport.HelipadLongitude = lon;
 		_airport.HelipadRadius = AirportEntry.DefaultHelipadRadius;
@@ -297,7 +297,7 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			string? icao, string? name, string? position, string? headingText)
 		{
 			var icaoNorm = (icao ?? string.Empty).Trim().ToUpperInvariant();
-			var nameNorm = name ?? string.Empty;
+			var nameNorm = ProjectValidator.ClampSname(name);
 			if (Icao4 != icaoNorm || Name != nameNorm)
 				return false;
 

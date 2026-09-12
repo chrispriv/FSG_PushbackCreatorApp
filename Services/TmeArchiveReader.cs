@@ -40,7 +40,7 @@ public static class TmeArchiveReader
 			var tsc = reader.ReadToEnd();
 			try
 			{
-				var airport = TscParser.Parse(tsc);
+				var airport = TscParser.Parse(tsc, path);
 				project.Airports.Add(airport);
 			}
 			catch

@@ -18,26 +18,41 @@ public static class TscParser
 	static readonly Regex HeadingField = new(@"\[float64\]\[heading\]\[([^\]]+)\]", RegexOptions.CultureInvariant);
 	static readonly Regex SizeField = new(@"\[float64\]\[size\]\[([^\]]+)\]", RegexOptions.CultureInvariant);
 	static readonly Regex NameField = new(@"\[string8\]\[name\]\[([^\]]+)\]", RegexOptions.CultureInvariant);
+	static readonly Regex PushbackTag = new(@"\[tags\]\[pushback\]", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
-	public static AirportEntry Parse(string tsc)
+	public static AirportEntry Parse(string tsc, string? zipEntryPath = null)
 	{
-		var icaoMatch = IcaoField.Match(tsc);
-		if (!icaoMatch.Success)
-			throw new InvalidOperationException("TSC has no icao field.");
+		var icao4 = Icao4FromPath(zipEntryPath) ?? Icao4FromTscField(tsc);
+		if (!ProjectValidator.IsIcao4(icao4))
+			throw new InvalidOperationException("TSC has no 4-character ICAO from folder, file name, or [icao] field.");
 
-		var code = icaoMatch.Groups[1].Value.Trim().ToUpperInvariant();
-		var airport = new AirportEntry { IsNew = false };
-		ApplyCode(airport, code);
-		if (airport.Kind == AirportKind.Heliport)
+		var parkingMatches = ParkingBlock.Matches(tsc);
+		var hasPushback = false;
+		foreach (Match parking in parkingMatches)
 		{
-			var snameMatch = SnameField.Match(tsc);
-			if (snameMatch.Success)
+			if (PushbackTag.IsMatch(parking.Groups["body"].Value))
 			{
-				var sname = ProjectValidator.ClampSname(snameMatch.Groups[1].Value);
-				if (!string.IsNullOrWhiteSpace(sname) &&
-				    !string.Equals(sname, code, StringComparison.OrdinalIgnoreCase))
-					airport.Name = sname;
+				hasPushback = true;
+				break;
 			}
+		}
+
+		var airport = new AirportEntry
+		{
+			IsNew = false,
+			Kind = hasPushback ? AirportKind.DummyPushback : AirportKind.Heliport,
+			Icao4 = icao4
+		};
+
+		var snameMatch = SnameField.Match(tsc);
+		if (snameMatch.Success)
+		{
+			var sname = ProjectValidator.ClampSname(snameMatch.Groups[1].Value);
+			if (!string.IsNullOrWhiteSpace(sname) &&
+			    !string.Equals(sname, icao4, StringComparison.OrdinalIgnoreCase) &&
+			    !string.Equals(sname, airport.TmeCode, StringComparison.OrdinalIgnoreCase) &&
+			    !string.Equals(sname, airport.FileIcao, StringComparison.OrdinalIgnoreCase))
+				airport.Name = sname;
 		}
 
 		if (TryFirstPosition(tsc, out var placeLon, out var placeLat))
@@ -61,9 +76,11 @@ public static class TscParser
 			airport.HelipadRadius = AirportEntry.DefaultHelipadRadius;
 		}
 
-		foreach (Match parking in ParkingBlock.Matches(tsc))
+		foreach (Match parking in parkingMatches)
 		{
 			var body = parking.Groups["body"].Value;
+			if (!PushbackTag.IsMatch(body))
+				continue;
 			if (!TryFirstPosition(body, out var lon, out var lat))
 				continue;
 
@@ -91,17 +108,39 @@ public static class TscParser
 		return airport;
 	}
 
-	public static void ApplyCode(AirportEntry airport, string code)
+	static string? Icao4FromPath(string? zipEntryPath)
 	{
-		if (code.Length == 4)
+		if (string.IsNullOrWhiteSpace(zipEntryPath))
+			return null;
+
+		var normalized = zipEntryPath.Replace('\\', '/').Trim('/');
+		var file = Path.GetFileNameWithoutExtension(normalized);
+		var folder = Path.GetFileName(Path.GetDirectoryName(normalized.Replace('/', Path.DirectorySeparatorChar)));
+		foreach (var candidate in new[] { folder, file })
 		{
-			airport.Kind = AirportKind.Heliport;
-			airport.Icao4 = code;
-			return;
+			var four = FirstFour(candidate);
+			if (four is not null)
+				return four;
 		}
 
-		airport.Kind = AirportKind.DummyPushback;
-		airport.Icao4 = code.Length >= 4 ? code[..4] : code;
+		return null;
+	}
+
+	static string? Icao4FromTscField(string tsc)
+	{
+		var icaoMatch = IcaoField.Match(tsc);
+		if (!icaoMatch.Success)
+			return null;
+		return FirstFour(icaoMatch.Groups[1].Value);
+	}
+
+	static string? FirstFour(string? text)
+	{
+		var trimmed = (text ?? string.Empty).Trim();
+		if (trimmed.Length < 4)
+			return null;
+		var four = trimmed[..4].ToUpperInvariant();
+		return ProjectValidator.IsIcao4(four) ? four : null;
 	}
 
 	static bool TryFirstPosition(string text, out double longitude, out double latitude)
@@ -144,10 +183,15 @@ public static class TscParser
 			    <[float64][heading][264]>
 			    <[float64][size][23]>
 			    <[string8][name][A3]>
+			    <[string8u][tags][pushback]>
 			>
 			""";
-		var parsed = Parse(sample);
-		if (parsed.TmeCode != "BKPR00" || parsed.ParkingSlots.Count != 1 || parsed.ParkingSlots[0].Name != "A3")
+		var parsed = Parse(sample, "pkg/scenery/airports/bkpr00/bkpr00.tsc");
+		if (parsed.Kind != AirportKind.DummyPushback ||
+		    parsed.TmeCode != "BKPR00" ||
+		    parsed.FileIcao != "BKPR  " ||
+		    parsed.ParkingSlots.Count != 1 ||
+		    parsed.ParkingSlots[0].Name != "A3")
 			throw new InvalidOperationException("TSC parser failed the BKPR00 sample.");
 	}
 #endif

@@ -11,10 +11,10 @@ public static class TscWriter
 		if (airport.HelipadLatitude is not { } lat || airport.HelipadLongitude is not { } lon)
 			throw new InvalidOperationException($"{airport.TmeCode} needs a helipad position.");
 
-		var code = airport.TmeCode.ToUpperInvariant();
-		var sname = airport.Kind == AirportKind.DummyPushback
-			? code
-			: string.IsNullOrWhiteSpace(airport.Name) ? code : ProjectValidator.ClampSname(airport.Name);
+		var icaoField = airport.FileIcao.ToUpperInvariant();
+		var sname = string.IsNullOrWhiteSpace(airport.Name)
+			? airport.TmeCode.ToUpperInvariant()
+			: ProjectValidator.ClampSname(airport.Name);
 		var sb = new StringBuilder();
 		Line(sb, "<[file][][]");
 		Line(sb, "    <[tmsimulator_scenery_place][][]");
@@ -22,7 +22,7 @@ public static class TscWriter
 		Line(sb, $"        <[string8][sname][{sname}]>");
 		if (airport.Kind == AirportKind.Heliport)
 			Line(sb, $"        <[string8][lname][{sname}]>");
-		Line(sb, $"        <[string8u][icao][{code}]>");
+		Line(sb, $"        <[string8u][icao][{icaoField}]>");
 		Line(sb, "        <[string8u][coordinate_system][flat]>");
 		Line(sb, $"        <[vector2_float64][position][{FormatLonLat(lon, lat)}]>");
 		Line(sb, "        <[bool][autoheight][true]>");
@@ -43,7 +43,7 @@ public static class TscWriter
 		{
 			var slot = airport.ParkingSlots[i];
 			if (slot.Latitude is not { } plat || slot.Longitude is not { } plon)
-				throw new InvalidOperationException($"{code} parking '{slot.Name}' needs a position.");
+				throw new InvalidOperationException($"{airport.TmeCode} parking '{slot.Name}' needs a position.");
 
 			Line(sb, $"            <[tmsimulator_parking_position][element][{i}]");
 			Line(sb, $"                <[vector2_float64][position][{FormatLonLat(plon, plat)}]>");
@@ -51,7 +51,7 @@ public static class TscWriter
 			Line(sb, $"                <[float64][size][{FormatNumber(slot.Size)}]>");
 			Line(sb, $"                <[string8][name][{slot.Name}]>");
 			Line(sb, "                <[string8u][tags][pushback]>");
-			Line(sb, "	    >");
+			Line(sb, "            >");
 		}
 
 		Line(sb, "");
@@ -59,7 +59,9 @@ public static class TscWriter
 		Line(sb, "");
 		Line(sb, "    >");
 		Line(sb, ">");
-		return sb.ToString();
+		var text = sb.ToString();
+		AeroflySectionBalance.Ensure(text, "TSC");
+		return text;
 	}
 
 	static void Line(StringBuilder sb, string text) => sb.Append(text).Append("\r\n");
