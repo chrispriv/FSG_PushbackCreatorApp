@@ -487,3 +487,9 @@ $RECYCLE.BIN/
 *.apk
 *.apk.idsig
 
+# Local Release copies and draft notes (binaries go on GitHub Releases)
+/dist/
+
+# Cursor/VS Copilot Azure boilerplate (not part of this app)
+.github/copilot-instructions.md
+
