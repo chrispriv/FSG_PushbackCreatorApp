@@ -166,7 +166,8 @@ public partial class AirportListPage : ContentPage, IShellBackHandler
 			"FSG TME",
 			".tme",
 			package => TmeStoreArchive.Build(ProjectSession.Current, package),
-			"Unix Store TME written to");
+			"Unix Store TME written to",
+			markExported: true);
 
 	async void OnExportZip(object? sender, EventArgs e) =>
 		await ExportAsync(
@@ -174,14 +175,25 @@ public partial class AirportListPage : ContentPage, IShellBackHandler
 			"FS4 ZIP",
 			".zip",
 			package => Fs4ZipArchive.Build(ProjectSession.Current, package),
-			"Windows ZIP written to");
+			"Windows ZIP written to",
+			markExported: true);
+
+	async void OnExportKml(object? sender, EventArgs e) =>
+		await ExportAsync(
+			"Export KML",
+			"KML",
+			".kml",
+			package => KmlWriter.Write(ProjectSession.Current, package),
+			"KML written to",
+			markExported: false);
 
 	async Task ExportAsync(
 		string title,
 		string fileTypeName,
 		string extension,
 		Func<string, byte[]> build,
-		string savedPrefix)
+		string savedPrefix,
+		bool markExported)
 	{
 		ApplyPackageName();
 		if (!await ValidateForExportAsync(title))
@@ -198,10 +210,13 @@ public partial class AirportListPage : ContentPage, IShellBackHandler
 				return;
 
 			RefreshPackageNameEntry();
-			ProjectSession.MarkExported();
-			var extra = extension == ".zip"
+			if (markExported)
+				ProjectSession.MarkExported();
+			var extra = extension.Equals(".zip", StringComparison.OrdinalIgnoreCase)
 				? $"\n\nUnpack into Aerofly FS 4:\naddons\\scenery\\{ProjectSession.Current.PackageFolderName}"
-				: $"\n\nPackage folder: {ProjectSession.Current.PackageFolderName}";
+				: extension.Equals(".kml", StringComparison.OrdinalIgnoreCase)
+					? "\n\nOpen in Google Earth to check helipad and pushback positions."
+					: $"\n\nPackage folder: {ProjectSession.Current.PackageFolderName}";
 			if (DeviceInfo.Current.Platform == DevicePlatform.Android)
 				extra += "\n\nSaved in Downloads. A file with this name is replaced.";
 			await DisplayAlert(title, $"{savedPrefix}:\n{location}{extra}", "OK");

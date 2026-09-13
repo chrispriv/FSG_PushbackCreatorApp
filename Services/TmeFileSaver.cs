@@ -38,7 +38,9 @@ public static class TmeFileSaver
 		_ = fileTypeName;
 		var mime = extension.Equals(".zip", StringComparison.OrdinalIgnoreCase)
 			? "application/zip"
-			: "application/octet-stream";
+			: extension.Equals(".kml", StringComparison.OrdinalIgnoreCase)
+				? "application/vnd.google-earth.kml+xml"
+				: "application/octet-stream";
 		var package = suggested;
 		var bytes = build(package);
 		try

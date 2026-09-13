@@ -55,9 +55,10 @@
         </CollectionView>
 
         <VerticalStackLayout Grid.Row="4" Spacing="8" Padding="0,8,0,0">
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
                 <Button Text="Export TME" Clicked="OnExportTme" />
                 <Button Grid.Column="1" Text="Export ZIP (FS4)" Clicked="OnExportZip" />
+                <Button Grid.Column="2" Text="Export KML" Clicked="OnExportKml" />
             </Grid>
             <Button Text="Quit project"
                     Style="{StaticResource QuietButton}"
