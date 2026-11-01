@@ -20,27 +20,39 @@ public static class TmeArchiveReader
 		var skipped = 0;
 		string? package = null;
 
-		foreach (var entry in zip.Entries.OrderBy(e => e.FullName, StringComparer.OrdinalIgnoreCase))
+		var tocByStem = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+		foreach (var entry in zip.Entries)
 		{
 			var path = entry.FullName.Replace('\\', '/');
 			if (entry.Length == 0 || path.EndsWith('/'))
 				continue;
-			if (!path.EndsWith(".tsc", StringComparison.OrdinalIgnoreCase))
-				continue;
 			if (path.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase) ||
 			    Path.GetFileName(path).StartsWith('.'))
 			{
-				skipped++;
+				if (path.EndsWith(".tsc", StringComparison.OrdinalIgnoreCase))
+					skipped++;
 				continue;
 			}
+
+			var isTsc = path.EndsWith(".tsc", StringComparison.OrdinalIgnoreCase);
+			var isToc = path.EndsWith(".toc", StringComparison.OrdinalIgnoreCase);
+			if (!isTsc && !isToc)
+				continue;
 
 			package ??= PackageNameFromPath(path);
 
 			using var reader = new StreamReader(entry.Open(), Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
-			var tsc = reader.ReadToEnd();
+			var text = reader.ReadToEnd();
+			if (isToc)
+			{
+				tocByStem[Path.GetFileNameWithoutExtension(path)] = text;
+				continue;
+			}
+
 			try
 			{
-				var airport = TscParser.Parse(tsc, path);
+				var airport = TscParser.Parse(text, path);
 				project.Airports.Add(airport);
 			}
 			catch
@@ -49,16 +61,17 @@ public static class TmeArchiveReader
 			}
 		}
 
-			if (project.Airports.Count == 0)
+		if (project.Airports.Count == 0)
 			throw new InvalidOperationException("No airport .tsc files were found in this archive.");
 
 		if (!string.IsNullOrWhiteSpace(package))
 			project.PackageFolderName = package;
 
-		var ordered = project.Airports.OrderBy(a => a.TmeCode, StringComparer.OrdinalIgnoreCase).ToList();
-		project.Airports.Clear();
-		foreach (var airport in ordered)
-			project.Airports.Add(airport);
+		foreach (var airport in project.Airports)
+		{
+			if (tocByStem.TryGetValue(airport.FolderName, out var toc))
+				TocParser.ApplyDummy(airport, toc);
+		}
 
 		return new TmeImportResult
 		{

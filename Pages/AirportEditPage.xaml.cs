@@ -11,6 +11,7 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 	AirportSnapshot? _snapshot;
 	bool _pauseRebind;
 	bool _leaving;
+	int _fieldColumns = -1;
 
 	public string AirportId { get; set; } = string.Empty;
 
@@ -42,6 +43,74 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		return true;
 	}
 
+	protected override void OnSizeAllocated(double width, double height)
+	{
+		base.OnSizeAllocated(width, height);
+		if (width <= 0)
+			return;
+
+		// Phone portrait (~360–430 dp) is too narrow for two field columns.
+		var columns = width < 520 ? 1 : 2;
+		if (columns == _fieldColumns)
+			return;
+
+		_fieldColumns = columns;
+		ApplyFieldColumns(columns == 1);
+	}
+
+	void ApplyFieldColumns(bool stacked)
+	{
+		if (stacked)
+		{
+			SetStacked(IdentityGrid, IcaoBlock, NameBlock);
+			SetStacked(HelipadGrid, HelipadPositionBlock, HelipadHeadingBlock);
+			SetStacked(TowerGrid, TowerPositionBlock, TowerHeightBlock);
+			return;
+		}
+
+		SetTwoColumn(IdentityGrid, IcaoBlock, NameBlock, starLeft: 1, starRight: 1.25);
+		SetTwoColumn(HelipadGrid, HelipadPositionBlock, HelipadHeadingBlock, starLeft: 1.7, starRight: 1);
+		SetTwoColumn(TowerGrid, TowerPositionBlock, TowerHeightBlock, starLeft: 1.7, starRight: 1);
+	}
+
+	static void SetStacked(Grid grid, View first, View second)
+	{
+		grid.ColumnDefinitions = new ColumnDefinitionCollection
+		{
+			new(GridLength.Star)
+		};
+		grid.RowDefinitions = new RowDefinitionCollection
+		{
+			new(GridLength.Auto),
+			new(GridLength.Auto)
+		};
+		Grid.SetRow(first, 0);
+		Grid.SetColumn(first, 0);
+		Grid.SetColumnSpan(first, 1);
+		Grid.SetRow(second, 1);
+		Grid.SetColumn(second, 0);
+		Grid.SetColumnSpan(second, 1);
+	}
+
+	static void SetTwoColumn(Grid grid, View first, View second, double starLeft, double starRight)
+	{
+		grid.ColumnDefinitions = new ColumnDefinitionCollection
+		{
+			new(new GridLength(starLeft, GridUnitType.Star)),
+			new(new GridLength(starRight, GridUnitType.Star))
+		};
+		grid.RowDefinitions = new RowDefinitionCollection
+		{
+			new(GridLength.Auto)
+		};
+		Grid.SetRow(first, 0);
+		Grid.SetColumn(first, 0);
+		Grid.SetColumnSpan(first, 1);
+		Grid.SetRow(second, 0);
+		Grid.SetColumn(second, 1);
+		Grid.SetColumnSpan(second, 1);
+	}
+
 	void BindAirport()
 	{
 		if (!Guid.TryParse(AirportId, out var id))
@@ -67,6 +136,14 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		NameEntry.Text = _airport.Name;
 		HelipadPositionEntry.Text = GeoCoordinateParser.Format(_airport.HelipadLatitude, _airport.HelipadLongitude);
 		HelipadHeadingEntry.Text = _airport.HelipadHeading.ToString("0.###", CultureInfo.InvariantCulture);
+		var isPushback = _airport.Kind != AirportKind.Heliport;
+		TowerGrid.IsVisible = isPushback;
+		TowerPositionEntry.Text = isPushback
+			? GeoCoordinateParser.Format(_airport.TowerLatitude, _airport.TowerLongitude)
+			: string.Empty;
+		TowerHeightEntry.Text = isPushback
+			? _airport.TowerHeightAgl.ToString("0.###", CultureInfo.InvariantCulture)
+			: "0";
 		RefreshParkingList();
 	}
 
@@ -101,7 +178,7 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		if (string.IsNullOrWhiteSpace(positionText) ||
 		    !GeoCoordinateParser.TryParse(positionText, out var lat, out var lon))
 		{
-			error = "Helipad position is required. Paste decimal (lat, lon) or Google Earth DMS, with a space or a comma between the two values.";
+			error = "Helipad position is required. Paste Google Earth decimal (lat, lon) for better results. A space or comma between the two values.";
 			return false;
 		}
 
@@ -123,11 +200,48 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			return false;
 		}
 
+		double? towerLat = null;
+		double? towerLon = null;
+		var towerHeight = 0d;
+		if (_airport.Kind != AirportKind.Heliport)
+		{
+			var towerText = TowerPositionEntry.Text;
+			if (!string.IsNullOrWhiteSpace(towerText))
+			{
+				if (!GeoCoordinateParser.TryParse(towerText, out var parsedTowerLat, out var parsedTowerLon))
+				{
+					error = "Tower position is optional. Paste Google Earth decimal (lat, lon), or leave the field empty.";
+					return false;
+				}
+
+				towerLat = parsedTowerLat;
+				towerLon = parsedTowerLon;
+				TowerPositionEntry.Text = GeoCoordinateParser.Format(towerLat, towerLon);
+			}
+
+			var heightText = TowerHeightEntry.Text;
+			if (string.IsNullOrWhiteSpace(heightText))
+				towerHeight = 0;
+			else if (!TryParseDouble(heightText, out towerHeight))
+			{
+				error = "Tower height AGL must be a number (0 = default).";
+				return false;
+			}
+
+			error = ProjectValidator.TowerPlacement(
+				_airport, towerLat, towerLon, towerHeight, lat, lon);
+			if (error is not null)
+				return false;
+		}
+
 		_airport.Name = ProjectValidator.ClampSname(NameEntry.Text);
 		_airport.HelipadLatitude = lat;
 		_airport.HelipadLongitude = lon;
 		_airport.HelipadRadius = AirportEntry.DefaultHelipadRadius;
 		_airport.HelipadHeading = heading;
+		_airport.TowerLatitude = towerLat;
+		_airport.TowerLongitude = towerLon;
+		_airport.TowerHeightAgl = towerHeight;
 		UpdateTmeCodeLabel();
 		return true;
 	}
@@ -147,7 +261,9 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			IcaoEntry.Text,
 			NameEntry.Text,
 			HelipadPositionEntry.Text,
-			HelipadHeadingEntry.Text);
+			HelipadHeadingEntry.Text,
+			TowerPositionEntry.Text,
+			TowerHeightEntry.Text);
 	}
 
 	void OnIcaoChanged(object? sender, TextChangedEventArgs e) => UpdateTmeCodeLabel();
@@ -267,14 +383,20 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		string Name,
 		double? HelipadLatitude,
 		double? HelipadLongitude,
-		double HelipadHeading)
+		double HelipadHeading,
+		double? TowerLatitude,
+		double? TowerLongitude,
+		double TowerHeightAgl)
 	{
 		public static AirportSnapshot Capture(AirportEntry airport) => new(
 			airport.Icao4,
 			airport.Name,
 			airport.HelipadLatitude,
 			airport.HelipadLongitude,
-			airport.HelipadHeading);
+			airport.HelipadHeading,
+			airport.TowerLatitude,
+			airport.TowerLongitude,
+			airport.TowerHeightAgl);
 
 		public void Restore(AirportEntry airport)
 		{
@@ -284,6 +406,9 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			airport.HelipadLongitude = HelipadLongitude;
 			airport.HelipadRadius = AirportEntry.DefaultHelipadRadius;
 			airport.HelipadHeading = HelipadHeading;
+			airport.TowerLatitude = TowerLatitude;
+			airport.TowerLongitude = TowerLongitude;
+			airport.TowerHeightAgl = TowerHeightAgl;
 		}
 
 		public bool MatchesAirport(AirportEntry airport) =>
@@ -291,32 +416,47 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			Name == airport.Name &&
 			HelipadLatitude == airport.HelipadLatitude &&
 			HelipadLongitude == airport.HelipadLongitude &&
-			HelipadHeading == airport.HelipadHeading;
+			HelipadHeading == airport.HelipadHeading &&
+			TowerLatitude == airport.TowerLatitude &&
+			TowerLongitude == airport.TowerLongitude &&
+			TowerHeightAgl == airport.TowerHeightAgl;
 
 		public bool MatchesForm(
-			string? icao, string? name, string? position, string? headingText)
+			string? icao, string? name, string? position, string? headingText,
+			string? towerPosition, string? towerHeightText)
 		{
 			var icaoNorm = (icao ?? string.Empty).Trim().ToUpperInvariant();
 			var nameNorm = ProjectValidator.ClampSname(name);
 			if (Icao4 != icaoNorm || Name != nameNorm)
 				return false;
 
-			double? lat = HelipadLatitude;
-			double? lon = HelipadLongitude;
-			if (string.IsNullOrWhiteSpace(position))
-			{
-				if (lat is not null || lon is not null)
-					return false;
-			}
-			else if (!GeoCoordinateParser.TryParse(position, out var parsedLat, out var parsedLon) ||
-			         parsedLat != lat || parsedLon != lon)
+			if (!SameOptionalPosition(position, HelipadLatitude, HelipadLongitude))
+				return false;
+			if (!SameOptionalPosition(towerPosition, TowerLatitude, TowerLongitude))
 				return false;
 
 			if (!double.TryParse(headingText, NumberStyles.Float, CultureInfo.InvariantCulture, out var heading) &&
 			    !double.TryParse(headingText, NumberStyles.Float, CultureInfo.CurrentCulture, out heading))
 				return false;
+			if (heading != HelipadHeading)
+				return false;
 
-			return heading == HelipadHeading;
+			if (string.IsNullOrWhiteSpace(towerHeightText))
+				return TowerHeightAgl == 0;
+
+			if (!double.TryParse(towerHeightText, NumberStyles.Float, CultureInfo.InvariantCulture, out var towerHeight) &&
+			    !double.TryParse(towerHeightText, NumberStyles.Float, CultureInfo.CurrentCulture, out towerHeight))
+				return false;
+
+			return towerHeight == TowerHeightAgl;
+		}
+
+		static bool SameOptionalPosition(string? text, double? latitude, double? longitude)
+		{
+			if (string.IsNullOrWhiteSpace(text))
+				return latitude is null && longitude is null;
+			return GeoCoordinateParser.TryParse(text, out var parsedLat, out var parsedLon) &&
+			       parsedLat == latitude && parsedLon == longitude;
 		}
 	}
 }

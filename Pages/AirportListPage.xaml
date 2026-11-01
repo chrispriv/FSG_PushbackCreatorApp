@@ -60,10 +60,13 @@
                 <Button Grid.Column="1" Text="Export ZIP (FS4)" Clicked="OnExportZip" />
                 <Button Grid.Column="2" Text="Export KML" Clicked="OnExportKml" />
             </Grid>
-            <Button Text="Quit project"
-                    Style="{StaticResource QuietButton}"
-                    Clicked="OnCancel"
-                    HorizontalOptions="Fill" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Button Text="Sort A–Z" Clicked="OnSortAirports" />
+                <Button Grid.Column="1"
+                        Text="Quit project"
+                        Style="{StaticResource QuietButton}"
+                        Clicked="OnCancel" />
+            </Grid>
         </VerticalStackLayout>
     </Grid>
 </ContentPage>

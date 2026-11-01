@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 
 namespace FSG_PushbackCreator.Models;
 
@@ -11,6 +12,9 @@ public sealed class AirportEntry : ObservableEntity
 	double? _helipadLongitude;
 	double _helipadRadius = DefaultHelipadRadius;
 	double _helipadHeading;
+	double? _towerLatitude;
+	double? _towerLongitude;
+	double _towerHeightAgl;
 
 	public const double DefaultHelipadRadius = 20;
 
@@ -94,6 +98,42 @@ public sealed class AirportEntry : ObservableEntity
 		set => Set(ref _helipadHeading, value);
 	}
 
+	public double? TowerLatitude
+	{
+		get => _towerLatitude;
+		set
+		{
+			if (Set(ref _towerLatitude, value))
+				Raise(nameof(ListSummary));
+		}
+	}
+
+	public double? TowerLongitude
+	{
+		get => _towerLongitude;
+		set
+		{
+			if (Set(ref _towerLongitude, value))
+				Raise(nameof(ListSummary));
+		}
+	}
+
+	/// <summary>Height above ground in metres. 0 is the default (no dummy .toc). Pushback airports only.</summary>
+	public double TowerHeightAgl
+	{
+		get => _towerHeightAgl;
+		set
+		{
+			if (Set(ref _towerHeightAgl, value))
+				Raise(nameof(ListSummary));
+		}
+	}
+
+	public bool HasTowerPosition => TowerLatitude is not null && TowerLongitude is not null;
+
+	public bool WritesTowerDummy =>
+		Kind != AirportKind.Heliport && TowerHeightAgl != 0;
+
 	public ObservableCollection<ParkingSlot> ParkingSlots { get; } = [];
 
 	public string KindLabel => Kind == AirportKind.Heliport ? "Heliport" : "Pushback airport";
@@ -103,7 +143,14 @@ public sealed class AirportEntry : ObservableEntity
 		get
 		{
 			var title = string.IsNullOrWhiteSpace(Name) ? KindLabel : Name;
-			return $"{TmeCode}  ·  {title}  ·  {ParkingSlots.Count} pushback slot(s)";
+			var line = $"{TmeCode}  ·  {title}  ·  {ParkingSlots.Count} pushback slot(s)";
+			if (Kind != AirportKind.Heliport && HasTowerPosition && TowerHeightAgl != 0)
+			{
+				var height = TowerHeightAgl.ToString("0.###", CultureInfo.InvariantCulture);
+				line += $"  ·  Tower shift ({height}m)";
+			}
+
+			return line;
 		}
 	}
 

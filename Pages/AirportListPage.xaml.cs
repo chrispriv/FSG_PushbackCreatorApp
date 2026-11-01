@@ -160,6 +160,40 @@ public partial class AirportListPage : ContentPage, IShellBackHandler
 		ProjectSession.MarkDirty();
 	}
 
+	async void OnSortAirports(object? sender, EventArgs e)
+	{
+		var airports = ProjectSession.Current.Airports;
+		if (airports.Count == 0)
+		{
+			await DisplayAlert("Sort A–Z", "No airports to sort.", "OK");
+			return;
+		}
+
+		var ordered = airports
+			.OrderBy(a => a.TmeCode, StringComparer.OrdinalIgnoreCase)
+			.ToList();
+		if (airports.Select(a => a.Id).SequenceEqual(ordered.Select(a => a.Id)))
+		{
+			await DisplayAlert("Sort A–Z", "Airports are already in ICAO (TME code) order.", "OK");
+			return;
+		}
+
+		if (!await DisplayAlert(
+			    "Sort A–Z",
+			    "Sort airports A–Z by ICAO (TME code)? The list order is kept in this project and in the next TME/ZIP export.",
+			    "Sort",
+			    "Cancel"))
+			return;
+
+		airports.Clear();
+		foreach (var airport in ordered)
+			airports.Add(airport);
+
+		ProjectSession.MarkDirty();
+		AirportList.ItemsSource = null;
+		AirportList.ItemsSource = airports;
+	}
+
 	async void OnExportTme(object? sender, EventArgs e) =>
 		await ExportAsync(
 			"Export TME",
@@ -215,7 +249,7 @@ public partial class AirportListPage : ContentPage, IShellBackHandler
 			var extra = extension.Equals(".zip", StringComparison.OrdinalIgnoreCase)
 				? $"\n\nUnpack into Aerofly FS 4:\naddons\\scenery\\{ProjectSession.Current.PackageFolderName}"
 				: extension.Equals(".kml", StringComparison.OrdinalIgnoreCase)
-					? "\n\nOpen in Google Earth to check helipad and pushback positions."
+					? "\n\nOpen in Google Earth to check helipad, tower, and pushback positions."
 					: $"\n\nPackage folder: {ProjectSession.Current.PackageFolderName}";
 			if (DeviceInfo.Current.Platform == DevicePlatform.Android)
 				extra += "\n\nSaved in Downloads. A file with this name is replaced.";
@@ -265,6 +299,22 @@ public partial class AirportListPage : ContentPage, IShellBackHandler
 				if (slot.Latitude is null || slot.Longitude is null)
 				{
 					await DisplayAlert(title, $"{airport.TmeCode} parking '{slot.Name}' needs a position.", "OK");
+					return false;
+				}
+			}
+
+			if (airport.HelipadLatitude is { } hLat && airport.HelipadLongitude is { } hLon)
+			{
+				var towerError = ProjectValidator.TowerPlacement(
+					airport,
+					airport.TowerLatitude,
+					airport.TowerLongitude,
+					airport.TowerHeightAgl,
+					hLat,
+					hLon);
+				if (towerError is not null)
+				{
+					await DisplayAlert(title, $"{airport.TmeCode}: {towerError}", "OK");
 					return false;
 				}
 			}

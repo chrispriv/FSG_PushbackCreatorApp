@@ -19,6 +19,8 @@ public static class WadWriter
 		Line(sb, "        <[uint64][uid][0]>");
 		Line(sb, $"        <[stringt8c][icao][{icaoField}]>");
 		Line(sb, $"        <[vector2_float64][position][{world}]>");
+		if (airport.Kind != AirportKind.Heliport && airport.HasTowerPosition)
+			Line(sb, $"        <[vector2_float64][tower_position][{FormatWorld(airport.TowerLongitude!.Value, airport.TowerLatitude!.Value)}]>");
 		Line(sb, "");
 		Line(sb, "        <[list_tmworld_airport_detailed_helipad][helipads][]");
 		Line(sb, "            <[tmworld_airport_detailed_helipad][element][0]");

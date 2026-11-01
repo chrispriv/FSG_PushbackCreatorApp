@@ -15,29 +15,65 @@
             <VerticalStackLayout Spacing="8">
                 <Label x:Name="KindLabel" Style="{StaticResource SubHeadline}" />
 
-                <Label Text="ICAO (4 characters)" Style="{StaticResource FieldCaption}" />
-                <Entry x:Name="IcaoEntry"
-                       MaxLength="4"
-                       Placeholder="e.g. UBBN or CH99"
-                       Keyboard="Text"
-                       TextChanged="OnIcaoChanged" />
-                <Label x:Name="TmeCodeLabel" />
+                <Grid x:Name="IdentityGrid"
+                      ColumnDefinitions="*,1.25*"
+                      ColumnSpacing="12"
+                      RowSpacing="0">
+                    <VerticalStackLayout x:Name="IcaoBlock" Spacing="0">
+                        <Label Text="ICAO (4 characters)" Style="{StaticResource FieldCaption}" />
+                        <Entry x:Name="IcaoEntry"
+                               MaxLength="4"
+                               Placeholder="e.g. UBBN or CH99"
+                               Keyboard="Text"
+                               TextChanged="OnIcaoChanged" />
+                        <Label x:Name="TmeCodeLabel" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout x:Name="NameBlock" Grid.Column="1" Spacing="0">
+                        <Label x:Name="NameCaptionLabel" Style="{StaticResource FieldCaption}" />
+                        <Entry x:Name="NameEntry"
+                               MaxLength="32"
+                               Placeholder="Optional. Empty uses the TME code."
+                               Keyboard="Text" />
+                    </VerticalStackLayout>
+                </Grid>
 
-                <VerticalStackLayout x:Name="NameBlock" Spacing="8">
-                    <Label x:Name="NameCaptionLabel" Style="{StaticResource FieldCaption}" />
-                    <Entry x:Name="NameEntry"
-                           MaxLength="32"
-                           Placeholder="Optional. Empty uses the TME code."
-                           Keyboard="Text" />
-                </VerticalStackLayout>
+                <Grid x:Name="HelipadGrid"
+                      ColumnDefinitions="1.7*,*"
+                      ColumnSpacing="12"
+                      RowSpacing="0">
+                    <VerticalStackLayout x:Name="HelipadPositionBlock" Spacing="0">
+                        <Label Text="Helipad position (Google Earth decimal for better results)"
+                               Style="{StaticResource FieldCaption}" />
+                        <Entry x:Name="HelipadPositionEntry"
+                               Placeholder="40.4675, 50.0539"
+                               Keyboard="Text" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout x:Name="HelipadHeadingBlock" Grid.Column="1" Spacing="0">
+                        <Label Text="Helipad heading (deg), default 0"
+                               Style="{StaticResource FieldCaption}" />
+                        <Entry x:Name="HelipadHeadingEntry" Keyboard="Numeric" />
+                    </VerticalStackLayout>
+                </Grid>
 
-                <Label Text="Helipad position (Google Earth decimal or DMS)" Style="{StaticResource FieldCaption}" />
-                <Entry x:Name="HelipadPositionEntry"
-                       Placeholder="40.4675, 50.0539 or 40°28'02.88&quot;N 50°03'13.86&quot;E"
-                       Keyboard="Text" />
-
-                <Label Text="Helipad heading (deg), default 0" Style="{StaticResource FieldCaption}" />
-                <Entry x:Name="HelipadHeadingEntry" Keyboard="Numeric" />
+                <Grid x:Name="TowerGrid"
+                      ColumnDefinitions="1.7*,*"
+                      ColumnSpacing="12"
+                      RowSpacing="0">
+                    <VerticalStackLayout x:Name="TowerPositionBlock" Spacing="0">
+                        <Label Text="Tower position shift (optional, Google Earth decimal for better results)"
+                               Style="{StaticResource FieldCaption}" />
+                        <Entry x:Name="TowerPositionEntry"
+                               Placeholder="Optional. Empty = no tower shift."
+                               Keyboard="Text" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout x:Name="TowerHeightBlock" Grid.Column="1" Spacing="0">
+                        <Label Text="Tower height AGL m (optional, 0 = default)"
+                               Style="{StaticResource FieldCaption}" />
+                        <Entry x:Name="TowerHeightEntry"
+                               Placeholder="0"
+                               Keyboard="Numeric" />
+                    </VerticalStackLayout>
+                </Grid>
 
                 <Label Text="Pushback parking slots" Style="{StaticResource SubHeadline}" Margin="0,16,0,0" />
                 <Button x:Name="NewParkingButton"

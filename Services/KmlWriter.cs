@@ -23,7 +23,7 @@ public static class KmlWriter
 			new XElement(ns + "kml",
 				new XElement(ns + "Document",
 					new XElement(ns + "name", title),
-					new XElement(ns + "description", "Helipad and pushback positions from Pushback Creator App."),
+					new XElement(ns + "description", "Helipad, tower, and pushback positions from Pushback Creator App."),
 					folders)));
 
 		var settings = new XmlWriterSettings
@@ -60,6 +60,20 @@ public static class KmlWriter
 				$"ICAO {airport.Icao4}\nTME {airport.TmeCode}\nHeading {FormatNumber(airport.HelipadHeading)} deg\nRadius {FormatNumber(AirportEntry.DefaultHelipadRadius)} m",
 				hlon,
 				hlat));
+		}
+
+		if (airport.Kind != AirportKind.Heliport &&
+		    airport.TowerLatitude is { } tlat &&
+		    airport.TowerLongitude is { } tlon)
+		{
+			var heightNote = airport.TowerHeightAgl == 0
+				? "Height default"
+				: $"Height {FormatNumber(airport.TowerHeightAgl)} m AGL";
+			children.Add(Placemark(
+				"Tower",
+				$"ICAO {airport.Icao4}\nTME {airport.TmeCode}\n{heightNote}",
+				tlon,
+				tlat));
 		}
 
 		foreach (var slot in airport.ParkingSlots)

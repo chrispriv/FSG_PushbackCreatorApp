@@ -30,6 +30,7 @@ public static class TmeFilePicker
 		{
 			{ DevicePlatform.Android, new[] { "*/*", "application/octet-stream", "application/zip", "application/x-zip-compressed" } },
 			{ DevicePlatform.iOS, new[] { "public.data", "public.zip-archive" } },
+			{ DevicePlatform.MacCatalyst, new[] { "public.data", "public.zip-archive", "public.item" } },
 			{ DevicePlatform.macOS, new[] { "tme", "zip" } }
 		});
 		var result = await FilePicker.Default.PickAsync(new PickOptions

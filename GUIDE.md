@@ -22,11 +22,12 @@ This is the second screen.
 2. **New** — choose **Pushback airport (ICAO + 00)** or **Heliport (4-character code)**.
 3. **Add TME (FSG)** / **Add ZIP (FS4)** — merge more airports into **this** project. Airports with a TME code that is already in the list are skipped. The package name is not replaced.
 4. **Edit** / **Delete** — change or remove one airport.
-5. Export:
+5. **Sort A–Z** — order the list by ICAO (TME code). Open, add, and new airports keep their current order until you press this.
+6. Export:
    - **Export TME** — FSG
    - **Export ZIP (FS4)** — PC
    - **Export KML** — Google Earth (`{package}.kml`); does not replace a TME/ZIP export
-6. **Quit project** — leave the project. If you changed something and did not export TME or ZIP, the app asks before closing.
+7. **Quit project** — leave the project. If you changed something and did not export TME or ZIP, the app asks before closing.
 
 **Exit** the whole app from the flyout (hamburger) menu, not from this screen.
 
@@ -38,6 +39,8 @@ This is the second screen.
 | Name `[sname]` | Optional map title (max 32). Empty → TME code (`ICAO00`). | Optional. Shown on the Location map above the ICAO. Empty → the 4-character code. |
 | Helipad position | Required. Also used as the dummy airport position. | Required. |
 | Helipad heading | Degrees, default 0. | Same. |
+| Tower position shift | Optional. Must not match the helipad or a parking slot (no overlay). Empty = no shift. | Not used. |
+| Tower height AGL | Optional. **0** = default (no extra `.toc`). Any other height writes `{icao}00.toc` and links it from the `.tsc`. | Not used. |
 | Parking slots | Add at least one pushback slot for a useful package. | Not used (button disabled). |
 
 **Save** keeps the airport in the project. **Cancel** (or the Shell back arrow) discards unsaved field changes; a new airport that was never saved is removed from the list.
@@ -51,11 +54,11 @@ Google Earth (optional):
 1. Open the airport (or helipad).
 2. Place a marker on the **helipad** and on each **pushback** stop.
 3. Unique names (`EPWA-H01`, `EPWA-A1`, …) make it easier to correct one point later.
-4. Copy coordinates into the app.
+4. Copy **decimal** coordinates into the app (Google Earth decimal for better results). DMS is accepted but Google Earth often rounds it, which can shift the point by several metres.
 
 Accepted formats:
 
-- Decimal: `40.4675, 50.0539` or `40.4675 50.0539` (latitude first)
+- Decimal (preferred): `40.4675, 50.0539` or `40.4675 50.0539` (latitude first)
 - Google Earth DMS: `40°28'02.88"N 50°03'13.86"E` (space or comma between the two values)
 
 Heading is degrees in the Aerofly sense. Parking size defaults to **35**. Helipad radius in the files is always **20**.
@@ -98,7 +101,7 @@ For each pushback stand:
 
 After a first export you can refine points:
 
-1. **Export KML** and open it in Google Earth (folders per airport: **Helipad H01** and **Pushback …**).
+1. **Export KML** and open it in Google Earth (folders per airport: **Helipad H01**, **Tower** when shifted, and **Pushback …**).
 2. Move the markers, copy the new coordinates back into the matching airport or parking fields, then **Save**.
 3. Export TME / ZIP again and copy the files into the simulator.
 
@@ -107,6 +110,6 @@ You can also keep using your own named Google Earth markers the same way, withou
 ## 8. Tips
 
 - One project can hold many airports. Use **Add TME / Add ZIP** to combine packages, then export once.
-- Re-export **replaces** TSC/WAD with this app’s layout. Import still reads `[sname]` and pushback-tagged parking.
+- Re-export **replaces** TSC/WAD (and the airport `.toc` when a tower dummy is used) with this app’s layout. Import still reads `[sname]`, pushback-tagged parking, `tower_position`, and a `landrider01` dummy from `{icao}00.toc`.
 - If Play Protect asks to scan a new APK, wait for the scan. A previous version of the app does not skip the scan for a new file.
 - Do not raise the helipad radius in a hex editor expecting the app to keep it: export always writes **20**.

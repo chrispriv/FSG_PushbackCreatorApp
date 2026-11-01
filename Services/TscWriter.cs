@@ -25,6 +25,8 @@ public static class TscWriter
 		Line(sb, $"        <[string8u][icao][{icaoField}]>");
 		Line(sb, "        <[string8u][coordinate_system][flat]>");
 		Line(sb, $"        <[vector2_float64][position][{FormatLonLat(lon, lat)}]>");
+		if (airport.Kind != AirportKind.Heliport && airport.HasTowerPosition)
+			Line(sb, $"        <[vector2_float64][tower_position][{FormatLonLat(airport.TowerLongitude!.Value, airport.TowerLatitude!.Value)}]>");
 		Line(sb, "        <[bool][autoheight][true]>");
 		Line(sb, "");
 		Line(sb, "        <[list_tmsimulator_helipad][helipads][]");
@@ -57,6 +59,18 @@ public static class TscWriter
 		Line(sb, "");
 		Line(sb, "        >");
 		Line(sb, "");
+		if (airport.WritesTowerDummy)
+		{
+			Line(sb, "        <[list_tmsimulator_scenery_cultivation][cultivation_files][]");
+			Line(sb, "            <[tmsimulator_scenery_cultivation][element][0]");
+			Line(sb, $"                <[string8][filename][{airport.FolderName}]>");
+			Line(sb, "                <[string8][building_textures_folder][]>");
+			Line(sb, "                <[bool][auto_height][true]>");
+			Line(sb, "                <[bool][use_height_offset][true]>");
+			Line(sb, "            >");
+			Line(sb, "        >");
+			Line(sb, "");
+		}
 		Line(sb, "    >");
 		Line(sb, ">");
 		var text = sb.ToString();
