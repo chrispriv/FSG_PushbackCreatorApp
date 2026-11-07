@@ -75,11 +75,61 @@
                     </VerticalStackLayout>
                 </Grid>
 
+                <VerticalStackLayout x:Name="HeliportObjectsSection" Spacing="0">
+                    <Grid x:Name="WindsockGrid"
+                          ColumnDefinitions="1.7*,*"
+                          ColumnSpacing="12"
+                          RowSpacing="0">
+                        <VerticalStackLayout x:Name="WindsockBlock" Spacing="0">
+                            <Label Text="Windsock (optional, Google Earth decimal for better results)"
+                                   Style="{StaticResource FieldCaption}" />
+                            <Entry x:Name="WindsockPositionEntry"
+                                   Placeholder="Optional. Empty = no windsock."
+                                   Keyboard="Text" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout x:Name="WindsockHeightBlock" Grid.Column="1" Spacing="0">
+                            <Label Text="Height offset m (optional, 0 = default)"
+                                   Style="{StaticResource FieldCaption}" />
+                            <Entry x:Name="WindsockHeightEntry"
+                                   Placeholder="0"
+                                   Keyboard="Numeric" />
+                        </VerticalStackLayout>
+                    </Grid>
+                    <Grid x:Name="HelipadObjectGrid"
+                          ColumnDefinitions="1.7*,*"
+                          ColumnSpacing="12"
+                          RowSpacing="0">
+                        <VerticalStackLayout x:Name="DummyHelipadBlock" Spacing="0">
+                            <Label Text="Helipad (optional, same position as helipad position)"
+                                   Style="{StaticResource FieldCaption}" />
+                            <HorizontalStackLayout Spacing="8">
+                                <CheckBox x:Name="DummyHelipadCheck" VerticalOptions="Center" />
+                                <Label Text="Add helipad"
+                                       Style="{StaticResource FieldCaption}"
+                                       VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout x:Name="HelipadHeightBlock" Grid.Column="1" Spacing="0">
+                            <Label Text="Height offset m (optional, 0 = default)"
+                                   Style="{StaticResource FieldCaption}" />
+                            <Entry x:Name="HelipadHeightOffsetEntry"
+                                   Placeholder="0"
+                                   Keyboard="Numeric" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout x:Name="ParkingSection" Spacing="8">
                 <Label Text="Pushback parking slots" Style="{StaticResource SubHeadline}" Margin="0,16,0,0" />
-                <Button x:Name="NewParkingButton"
-                        Text="New parking slot"
-                        Clicked="OnNewParking"
-                        HorizontalOptions="Fill" />
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                    <Button x:Name="NewParkingButton"
+                            Text="New parking slot"
+                            Clicked="OnNewParking" />
+                    <Button x:Name="SortParkingButton"
+                            Grid.Column="2"
+                            Text="Sort A–Z"
+                            Clicked="OnSortParking" />
+                </Grid>
                 <Label x:Name="ParkingHintLabel" />
 
                 <CollectionView x:Name="ParkingList" SelectionMode="None" HeightRequest="280">
@@ -103,6 +153,7 @@
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
+                </VerticalStackLayout>
             </VerticalStackLayout>
         </ScrollView>
 

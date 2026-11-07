@@ -12,7 +12,7 @@ On the home screen:
 | **Open TME (FSG)** | Load an existing FSG `.tme` (including packages this app did not create). |
 | **Open ZIP (FS4)** | Load an FS4 scenery zip (`package\airports\…`). |
 
-On Android, **Open** uses the system file picker. On Windows, use the file dialog.
+On Android, **Open** uses the system file picker. On Windows, use the file dialog. On **Mac**, **Export** asks for a folder (Documents, Downloads, …) so the file is not stored only inside the app container.
 
 ## 2. Project (airport list)
 
@@ -41,7 +41,9 @@ This is the second screen.
 | Helipad heading | Degrees, default 0. | Same. |
 | Tower position shift | Optional. Must not match the helipad or a parking slot (no overlay). Empty = no shift. | Not used. |
 | Tower height AGL | Optional. **0** = default (no extra `.toc`). Any other height writes `{icao}00.toc` and links it from the `.tsc`. | Not used. |
-| Parking slots | Add at least one pushback slot for a useful package. | Not used (button disabled). |
+| Windsock | Not used. | Optional position. Empty = none. Height offset m relative to 0 (autoheight). |
+| Helipad | Not used. | Optional checkbox. Same lon/lat as the helipad position. Height offset m is added to **−60.5 m**. |
+| Parking slots | Add at least one pushback slot for a useful package. **Sort A–Z** orders by name. | Not used. |
 
 **Save** keeps the airport in the project. **Cancel** (or the Shell back arrow) discards unsaved field changes; a new airport that was never saved is removed from the list.
 
@@ -72,6 +74,7 @@ For each pushback stand:
 1. Paste or type **position**.
 2. Set **heading** (default 0) and **size** (default 35).
 3. Set **name** (gate), for example `A1`. New slots are suggested as `A1`, `A2`, …
+4. On the airport screen, **Sort A–Z** orders the parking list by name. New slots stay at the end until you sort again.
 
 **Save** / **Cancel** work like on the airport screen.
 
@@ -101,7 +104,7 @@ For each pushback stand:
 
 After a first export you can refine points:
 
-1. **Export KML** and open it in Google Earth (folders per airport: **Helipad H01**, **Tower** when shifted, and **Pushback …**).
+1. **Export KML** and open it in Google Earth (folders per airport: **Helipad H01**, **Tower** / **Windsock** when set, and **Pushback …**).
 2. Move the markers, copy the new coordinates back into the matching airport or parking fields, then **Save**.
 3. Export TME / ZIP again and copy the files into the simulator.
 
@@ -110,6 +113,6 @@ You can also keep using your own named Google Earth markers the same way, withou
 ## 8. Tips
 
 - One project can hold many airports. Use **Add TME / Add ZIP** to combine packages, then export once.
-- Re-export **replaces** TSC/WAD (and the airport `.toc` when a tower dummy is used) with this app’s layout. Import still reads `[sname]`, pushback-tagged parking, `tower_position`, and a `landrider01` dummy from `{icao}00.toc`.
+- Re-export **replaces** TSC/WAD (and the airport `.toc` when a tower dummy or heliport objects are used) with this app’s layout. Import still reads `[sname]`, pushback-tagged parking, `tower_position`, `landrider01`, `airport_windsock_large1`, and `airportmast03`.
 - If Play Protect asks to scan a new APK, wait for the scan. A previous version of the app does not skip the scan for a new file.
 - Do not raise the helipad radius in a hex editor expecting the app to keep it: export always writes **20**.

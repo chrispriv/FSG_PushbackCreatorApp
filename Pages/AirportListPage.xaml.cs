@@ -249,7 +249,7 @@ public partial class AirportListPage : ContentPage, IShellBackHandler
 			var extra = extension.Equals(".zip", StringComparison.OrdinalIgnoreCase)
 				? $"\n\nUnpack into Aerofly FS 4:\naddons\\scenery\\{ProjectSession.Current.PackageFolderName}"
 				: extension.Equals(".kml", StringComparison.OrdinalIgnoreCase)
-					? "\n\nOpen in Google Earth to check helipad, tower, and pushback positions."
+					? "\n\nOpen in Google Earth to check helipad, tower, windsock, and pushback positions."
 					: $"\n\nPackage folder: {ProjectSession.Current.PackageFolderName}";
 			if (DeviceInfo.Current.Platform == DevicePlatform.Android)
 				extra += "\n\nSaved in Downloads. A file with this name is replaced.";

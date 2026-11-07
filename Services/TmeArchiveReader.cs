@@ -70,7 +70,7 @@ public static class TmeArchiveReader
 		foreach (var airport in project.Airports)
 		{
 			if (tocByStem.TryGetValue(airport.FolderName, out var toc))
-				TocParser.ApplyDummy(airport, toc);
+				TocParser.Apply(airport, toc);
 		}
 
 		return new TmeImportResult

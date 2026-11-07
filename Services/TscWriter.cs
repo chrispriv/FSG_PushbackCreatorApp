@@ -59,7 +59,7 @@ public static class TscWriter
 		Line(sb, "");
 		Line(sb, "        >");
 		Line(sb, "");
-		if (airport.WritesTowerDummy)
+		if (airport.WritesToc)
 		{
 			Line(sb, "        <[list_tmsimulator_scenery_cultivation][cultivation_files][]");
 			Line(sb, "            <[tmsimulator_scenery_cultivation][element][0]");

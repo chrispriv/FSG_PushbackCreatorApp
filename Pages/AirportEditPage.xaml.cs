@@ -65,12 +65,16 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			SetStacked(IdentityGrid, IcaoBlock, NameBlock);
 			SetStacked(HelipadGrid, HelipadPositionBlock, HelipadHeadingBlock);
 			SetStacked(TowerGrid, TowerPositionBlock, TowerHeightBlock);
+			SetStacked(WindsockGrid, WindsockBlock, WindsockHeightBlock);
+			SetStacked(HelipadObjectGrid, DummyHelipadBlock, HelipadHeightBlock);
 			return;
 		}
 
 		SetTwoColumn(IdentityGrid, IcaoBlock, NameBlock, starLeft: 1, starRight: 1.25);
 		SetTwoColumn(HelipadGrid, HelipadPositionBlock, HelipadHeadingBlock, starLeft: 1.7, starRight: 1);
 		SetTwoColumn(TowerGrid, TowerPositionBlock, TowerHeightBlock, starLeft: 1.7, starRight: 1);
+		SetTwoColumn(WindsockGrid, WindsockBlock, WindsockHeightBlock, starLeft: 1.7, starRight: 1);
+		SetTwoColumn(HelipadObjectGrid, DummyHelipadBlock, HelipadHeightBlock, starLeft: 1.7, starRight: 1);
 	}
 
 	static void SetStacked(Grid grid, View first, View second)
@@ -124,8 +128,11 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		KindLabel.Text = _airport.Kind == AirportKind.Heliport
 			? "Heliport — TME code stays 4 characters. Parking slots are not used. The name appears on the Change Location map above the ICAO code."
 			: "Dummy pushback airport — folder/file names are ICAO + 00. TSC/WAD [icao] uses ICAO plus two spaces. Helipad position is also the airport position.";
-		NewParkingButton.IsEnabled = _airport.Kind != AirportKind.Heliport;
-		ParkingHintLabel.Text = _airport.Kind == AirportKind.Heliport
+		var isHeliport = _airport.Kind == AirportKind.Heliport;
+		NewParkingButton.IsEnabled = !isHeliport;
+		ParkingSection.IsVisible = !isHeliport;
+		HeliportObjectsSection.IsVisible = isHeliport;
+		ParkingHintLabel.Text = isHeliport
 			? "A 4-character heliport has a helipad only."
 			: "A dummy pushback airport should add at least one pushback slot.";
 		NameCaptionLabel.Text = _airport.Kind == AirportKind.Heliport
@@ -144,6 +151,16 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		TowerHeightEntry.Text = isPushback
 			? _airport.TowerHeightAgl.ToString("0.###", CultureInfo.InvariantCulture)
 			: "0";
+		WindsockPositionEntry.Text = isPushback
+			? string.Empty
+			: GeoCoordinateParser.Format(_airport.WindsockLatitude, _airport.WindsockLongitude);
+		DummyHelipadCheck.IsChecked = !isPushback && _airport.DummyHelipadEnabled;
+		WindsockHeightEntry.Text = isPushback
+			? "0"
+			: _airport.WindsockHeightOffset.ToString("0.###", CultureInfo.InvariantCulture);
+		HelipadHeightOffsetEntry.Text = isPushback
+			? "0"
+			: _airport.HelipadHeightOffset.ToString("0.###", CultureInfo.InvariantCulture);
 		RefreshParkingList();
 	}
 
@@ -234,6 +251,27 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 				return false;
 		}
 
+		double? windsockLat = null;
+		double? windsockLon = null;
+		var dummyHelipad = false;
+		var windsockOffset = 0d;
+		var helipadOffset = 0d;
+		if (_airport.Kind == AirportKind.Heliport)
+		{
+			if (!TryParseOptionalPosition(
+				    WindsockPositionEntry,
+				    "Windsock is optional. Paste Google Earth decimal (lat, lon), or leave the field empty.",
+				    out windsockLat,
+				    out windsockLon,
+				    out error))
+				return false;
+			if (!TryParseOptionalOffset(WindsockHeightEntry.Text, "Windsock height offset must be a number (0 = default).", out windsockOffset, out error))
+				return false;
+			dummyHelipad = DummyHelipadCheck.IsChecked;
+			if (!TryParseOptionalOffset(HelipadHeightOffsetEntry.Text, "Helipad height offset must be a number (0 = default).", out helipadOffset, out error))
+				return false;
+		}
+
 		_airport.Name = ProjectValidator.ClampSname(NameEntry.Text);
 		_airport.HelipadLatitude = lat;
 		_airport.HelipadLongitude = lon;
@@ -242,8 +280,50 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		_airport.TowerLatitude = towerLat;
 		_airport.TowerLongitude = towerLon;
 		_airport.TowerHeightAgl = towerHeight;
+		_airport.WindsockLatitude = windsockLat;
+		_airport.WindsockLongitude = windsockLon;
+		_airport.DummyHelipadEnabled = dummyHelipad;
+		_airport.WindsockHeightOffset = windsockOffset;
+		_airport.HelipadHeightOffset = helipadOffset;
 		UpdateTmeCodeLabel();
 		return true;
+	}
+
+	static bool TryParseOptionalPosition(
+		Entry entry,
+		string invalidMessage,
+		out double? latitude,
+		out double? longitude,
+		out string? error)
+	{
+		latitude = null;
+		longitude = null;
+		error = null;
+		var text = entry.Text;
+		if (string.IsNullOrWhiteSpace(text))
+			return true;
+		if (!GeoCoordinateParser.TryParse(text, out var lat, out var lon))
+		{
+			error = invalidMessage;
+			return false;
+		}
+
+		latitude = lat;
+		longitude = lon;
+		entry.Text = GeoCoordinateParser.Format(lat, lon);
+		return true;
+	}
+
+	static bool TryParseOptionalOffset(string? text, string invalidMessage, out double value, out string? error)
+	{
+		value = 0;
+		error = null;
+		if (string.IsNullOrWhiteSpace(text))
+			return true;
+		if (TryParseDouble(text, out value))
+			return true;
+		error = invalidMessage;
+		return false;
 	}
 
 	static bool TryParseDouble(string? text, out double value)
@@ -263,7 +343,11 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			HelipadPositionEntry.Text,
 			HelipadHeadingEntry.Text,
 			TowerPositionEntry.Text,
-			TowerHeightEntry.Text);
+			TowerHeightEntry.Text,
+			WindsockPositionEntry.Text,
+			WindsockHeightEntry.Text,
+			DummyHelipadCheck.IsChecked,
+			HelipadHeightOffsetEntry.Text);
 	}
 
 	void OnIcaoChanged(object? sender, TextChangedEventArgs e) => UpdateTmeCodeLabel();
@@ -320,6 +404,45 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 
 		_leaving = true;
 		await Shell.Current.GoToAsync("..");
+	}
+
+	async void OnSortParking(object? sender, EventArgs e)
+	{
+		if (_airport is null)
+			return;
+		if (_airport.Kind == AirportKind.Heliport)
+			return;
+
+		var slots = _airport.ParkingSlots;
+		if (slots.Count == 0)
+		{
+			await DisplayAlert("Sort A–Z", "No parking slots to sort.", "OK");
+			return;
+		}
+
+		var ordered = slots
+			.OrderBy(s => s.Name, StringComparer.OrdinalIgnoreCase)
+			.ThenBy(s => s.Id)
+			.ToList();
+		if (slots.Select(s => s.Id).SequenceEqual(ordered.Select(s => s.Id)))
+		{
+			await DisplayAlert("Sort A–Z", "Parking slots are already in name order.", "OK");
+			return;
+		}
+
+		if (!await DisplayAlert(
+			    "Sort A–Z",
+			    "Sort parking slots A–Z by name? The list order is kept in this project and in the next TME/ZIP export.",
+			    "Sort",
+			    "Cancel"))
+			return;
+
+		slots.Clear();
+		foreach (var slot in ordered)
+			slots.Add(slot);
+
+		_airport.NotifyListSummary();
+		RefreshParkingList();
 	}
 
 	async void OnNewParking(object? sender, EventArgs e)
@@ -386,7 +509,13 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		double HelipadHeading,
 		double? TowerLatitude,
 		double? TowerLongitude,
-		double TowerHeightAgl)
+		double TowerHeightAgl,
+		double? WindsockLatitude,
+		double? WindsockLongitude,
+		double WindsockHeightOffset,
+		bool DummyHelipadEnabled,
+		double HelipadHeightOffset,
+		Guid[] ParkingOrder)
 	{
 		public static AirportSnapshot Capture(AirportEntry airport) => new(
 			airport.Icao4,
@@ -396,7 +525,13 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			airport.HelipadHeading,
 			airport.TowerLatitude,
 			airport.TowerLongitude,
-			airport.TowerHeightAgl);
+			airport.TowerHeightAgl,
+			airport.WindsockLatitude,
+			airport.WindsockLongitude,
+			airport.WindsockHeightOffset,
+			airport.DummyHelipadEnabled,
+			airport.HelipadHeightOffset,
+			airport.ParkingSlots.Select(s => s.Id).ToArray());
 
 		public void Restore(AirportEntry airport)
 		{
@@ -409,6 +544,12 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			airport.TowerLatitude = TowerLatitude;
 			airport.TowerLongitude = TowerLongitude;
 			airport.TowerHeightAgl = TowerHeightAgl;
+			airport.WindsockLatitude = WindsockLatitude;
+			airport.WindsockLongitude = WindsockLongitude;
+			airport.WindsockHeightOffset = WindsockHeightOffset;
+			airport.DummyHelipadEnabled = DummyHelipadEnabled;
+			airport.HelipadHeightOffset = HelipadHeightOffset;
+			RestoreParkingOrder(airport);
 		}
 
 		public bool MatchesAirport(AirportEntry airport) =>
@@ -419,11 +560,19 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			HelipadHeading == airport.HelipadHeading &&
 			TowerLatitude == airport.TowerLatitude &&
 			TowerLongitude == airport.TowerLongitude &&
-			TowerHeightAgl == airport.TowerHeightAgl;
+			TowerHeightAgl == airport.TowerHeightAgl &&
+			WindsockLatitude == airport.WindsockLatitude &&
+			WindsockLongitude == airport.WindsockLongitude &&
+			WindsockHeightOffset == airport.WindsockHeightOffset &&
+			DummyHelipadEnabled == airport.DummyHelipadEnabled &&
+			HelipadHeightOffset == airport.HelipadHeightOffset &&
+			ParkingOrder.SequenceEqual(airport.ParkingSlots.Select(s => s.Id));
 
 		public bool MatchesForm(
 			string? icao, string? name, string? position, string? headingText,
-			string? towerPosition, string? towerHeightText)
+			string? towerPosition, string? towerHeightText,
+			string? windsockPosition, string? windsockHeightText,
+			bool dummyHelipadChecked, string? helipadHeightText)
 		{
 			var icaoNorm = (icao ?? string.Empty).Trim().ToUpperInvariant();
 			var nameNorm = ProjectValidator.ClampSname(name);
@@ -433,6 +582,14 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			if (!SameOptionalPosition(position, HelipadLatitude, HelipadLongitude))
 				return false;
 			if (!SameOptionalPosition(towerPosition, TowerLatitude, TowerLongitude))
+				return false;
+			if (!SameOptionalPosition(windsockPosition, WindsockLatitude, WindsockLongitude))
+				return false;
+			if (!SameOptionalNumber(windsockHeightText, WindsockHeightOffset))
+				return false;
+			if (dummyHelipadChecked != DummyHelipadEnabled)
+				return false;
+			if (!SameOptionalNumber(helipadHeightText, HelipadHeightOffset))
 				return false;
 
 			if (!double.TryParse(headingText, NumberStyles.Float, CultureInfo.InvariantCulture, out var heading) &&
@@ -451,12 +608,38 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			return towerHeight == TowerHeightAgl;
 		}
 
+		void RestoreParkingOrder(AirportEntry airport)
+		{
+			var slots = airport.ParkingSlots;
+			var remaining = slots.ToDictionary(s => s.Id);
+			var next = new List<ParkingSlot>();
+			foreach (var id in ParkingOrder)
+			{
+				if (remaining.Remove(id, out var slot))
+					next.Add(slot);
+			}
+
+			next.AddRange(remaining.Values);
+			slots.Clear();
+			foreach (var slot in next)
+				slots.Add(slot);
+		}
+
 		static bool SameOptionalPosition(string? text, double? latitude, double? longitude)
 		{
 			if (string.IsNullOrWhiteSpace(text))
 				return latitude is null && longitude is null;
 			return GeoCoordinateParser.TryParse(text, out var parsedLat, out var parsedLon) &&
 			       parsedLat == latitude && parsedLon == longitude;
+		}
+
+		static bool SameOptionalNumber(string? text, double expected)
+		{
+			if (string.IsNullOrWhiteSpace(text))
+				return expected == 0;
+			return (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ||
+			        double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out value)) &&
+			       value == expected;
 		}
 	}
 }
