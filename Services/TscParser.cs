@@ -9,6 +9,7 @@ public static class TscParser
 	static readonly Regex IcaoField = new(@"\[icao\]\[([^\]]+)\]", RegexOptions.CultureInvariant);
 	static readonly Regex SnameField = new(@"\[sname\]\[([^\]]+)\]", RegexOptions.CultureInvariant);
 	static readonly Regex PositionField = new(@"\[vector2_float64\]\[position\]\[([^\]]+)\]", RegexOptions.CultureInvariant);
+	static readonly Regex TowerPositionField = new(@"\[vector2_float64\]\[tower_position\]\[([^\]]+)\]", RegexOptions.CultureInvariant);
 	static readonly Regex HelipadBlock = new(
 		@"<\[tmsimulator_helipad\]\[element\]\[\d+\](?<body>.*?)(?:\n|\r)\s*>",
 		RegexOptions.Singleline | RegexOptions.CultureInvariant);
@@ -59,6 +60,13 @@ public static class TscParser
 		{
 			airport.HelipadLongitude = placeLon;
 			airport.HelipadLatitude = placeLat;
+		}
+
+		var towerMatch = TowerPositionField.Match(tsc);
+		if (towerMatch.Success && TryPair(towerMatch.Groups[1].Value, out var towerLon, out var towerLat))
+		{
+			airport.TowerLongitude = towerLon;
+			airport.TowerLatitude = towerLat;
 		}
 
 		var helipad = HelipadBlock.Match(tsc);
@@ -151,12 +159,19 @@ public static class TscParser
 		if (!match.Success)
 			return false;
 
-		var parts = match.Groups[1].Value.Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries);
+		return TryPair(match.Groups[1].Value, out longitude, out latitude);
+	}
+
+	static bool TryPair(string? text, out double longitude, out double latitude)
+	{
+		longitude = 0;
+		latitude = 0;
+		if (string.IsNullOrWhiteSpace(text))
+			return false;
+		var parts = text.Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries);
 		if (parts.Length < 2)
 			return false;
-		if (!TryNumber(parts[0], out longitude) || !TryNumber(parts[1], out latitude))
-			return false;
-		return true;
+		return TryNumber(parts[0], out longitude) && TryNumber(parts[1], out latitude);
 	}
 
 	static bool TryNumber(string? text, out double value)

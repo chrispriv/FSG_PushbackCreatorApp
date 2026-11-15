@@ -56,6 +56,14 @@ public static class TmeFileSaver
 			await global::FSG_PushbackCreator.AndroidDocumentPicker.WriteUriAsync(picked.Value.Uri, bytes);
 			return picked.Value.DisplayName;
 		}
+#elif MACCATALYST || IOS
+		_ = fileTypeName;
+		var picked = await global::FSG_PushbackCreator.AppleFolderAccess.PickAsync();
+		if (picked is null)
+			return null;
+		var package = suggested;
+		var bytes = build(package);
+		return global::FSG_PushbackCreator.AppleFolderAccess.WriteFile(suggestedFile, bytes);
 #else
 		_ = fileTypeName;
 		var path = Path.Combine(FileSystem.Current.AppDataDirectory, suggestedFile);

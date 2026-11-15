@@ -74,11 +74,18 @@ public partial class ParkingEditPage : ContentPage, IShellBackHandler
 		if (string.IsNullOrWhiteSpace(positionText) ||
 		    !GeoCoordinateParser.TryParse(positionText, out var lat, out var lon))
 		{
-			error = "Parking position is required. Paste decimal (lat, lon) or Google Earth DMS, with a space or a comma between the two values.";
+			error = "Parking position is required. Paste Google Earth decimal (lat, lon) for better results. A space or comma between the two values.";
 			return false;
 		}
 
 		PositionEntry.Text = GeoCoordinateParser.Format(lat, lon);
+
+		if (_airport is not null)
+		{
+			error = ProjectValidator.ParkingMatchesTower(_airport, lat, lon);
+			if (error is not null)
+				return false;
+		}
 
 		if (!TryParseDouble(HeadingEntry.Text, out var heading))
 		{

@@ -29,6 +29,12 @@ public static class GeoCoordinateParser
 		@"(?<hemPrefix>[NSEWnsew])\s*(?<val>[+-]?\d+(?:[.,]\d+)?)|(?<val>[+-]?\d+(?:[.,]\d+)?)\s*(?<hemSuffix>[NSEWnsew])",
 		RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
+	public static bool SamePosition(double latitudeA, double longitudeA, double latitudeB, double longitudeB) =>
+		Math.Round(latitudeA, 6, MidpointRounding.AwayFromZero) ==
+		Math.Round(latitudeB, 6, MidpointRounding.AwayFromZero) &&
+		Math.Round(longitudeA, 6, MidpointRounding.AwayFromZero) ==
+		Math.Round(longitudeB, 6, MidpointRounding.AwayFromZero);
+
 	public static string Format(double? latitude, double? longitude)
 	{
 		if (latitude is not { } lat || longitude is not { } lon)

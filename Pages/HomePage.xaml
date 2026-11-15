@@ -36,7 +36,7 @@
                                TextColor="{StaticResource LinkBlue}"
                                FontAttributes="Bold"
                                FontSize="12" />
-                        <Label Text="Place named markers (for example UBBN-A1) and copy those coordinates into this app. Unique names make it easy to correct a position later."
+                        <Label Text="Place named markers (for example UBBN-A1) and copy decimal coordinates into this app. Decimal is more accurate than degrees/minutes. Unique names make it easy to correct a position later."
                                Style="{StaticResource FieldCaption}"
                                Margin="0" />
                     </VerticalStackLayout>

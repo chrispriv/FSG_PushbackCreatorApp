@@ -27,4 +27,55 @@ public static class ProjectValidator
 
 		return null;
 	}
+
+	public static string? TowerPlacement(
+		AirportEntry airport,
+		double? towerLatitude,
+		double? towerLongitude,
+		double towerHeightAgl,
+		double helipadLatitude,
+		double helipadLongitude,
+		ParkingSlot? ignoreSlot = null)
+	{
+		if (airport.Kind == AirportKind.Heliport)
+			return null;
+
+		var hasTower = towerLatitude is not null && towerLongitude is not null;
+		if (!hasTower)
+		{
+			if (towerHeightAgl != 0)
+				return "Tower height needs a tower position. Leave height at 0 for the default.";
+			return null;
+		}
+
+		if (towerHeightAgl < 0)
+			return "Tower height AGL must be 0 or greater.";
+
+		var tLat = towerLatitude!.Value;
+		var tLon = towerLongitude!.Value;
+		if (GeoCoordinateParser.SamePosition(tLat, tLon, helipadLatitude, helipadLongitude))
+			return "Tower position must not match the helipad (no overlay).";
+
+		foreach (var slot in airport.ParkingSlots)
+		{
+			if (ignoreSlot is not null && slot.Id == ignoreSlot.Id)
+				continue;
+			if (slot.Latitude is not { } sLat || slot.Longitude is not { } sLon)
+				continue;
+			if (GeoCoordinateParser.SamePosition(tLat, tLon, sLat, sLon))
+				return $"Tower position must not match parking '{slot.Name}' (no overlay).";
+		}
+
+		return null;
+	}
+
+	public static string? ParkingMatchesTower(AirportEntry airport, double latitude, double longitude)
+	{
+		if (airport.Kind == AirportKind.Heliport || !airport.HasTowerPosition)
+			return null;
+		if (GeoCoordinateParser.SamePosition(
+			    latitude, longitude, airport.TowerLatitude!.Value, airport.TowerLongitude!.Value))
+			return "This parking position matches the tower (no overlay). Choose another point.";
+		return null;
+	}
 }

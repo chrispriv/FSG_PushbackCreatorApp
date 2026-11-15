@@ -9,7 +9,7 @@ public partial class AppShell : Shell
 		Routing.RegisterRoute("airport", typeof(Pages.AirportEditPage));
 		Routing.RegisterRoute("parking", typeof(Pages.ParkingEditPage));
 		Navigating += OnNavigating;
-#if WINDOWS
+#if WINDOWS || MACCATALYST
 		Navigated += (_, _) =>
 		{
 			if (CurrentPage is not null)

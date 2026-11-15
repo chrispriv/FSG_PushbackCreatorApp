@@ -30,6 +30,8 @@ public static class Fs4ZipArchive
 				var basePath = $"{root}/airports/{folder}/{folder}";
 				AddFile(zip, basePath + ".tsc", Encoding.UTF8.GetBytes(TscWriter.Write(airport)));
 				AddFile(zip, basePath + ".wad", Encoding.UTF8.GetBytes(WadWriter.Write(airport)));
+				if (TocWriter.ShouldWrite(airport))
+					AddFile(zip, basePath + ".toc", Encoding.UTF8.GetBytes(TocWriter.Write(airport)));
 			}
 		}
 

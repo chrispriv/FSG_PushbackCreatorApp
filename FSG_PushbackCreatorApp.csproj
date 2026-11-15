@@ -3,15 +3,8 @@
 	<PropertyGroup>
 		<TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
-		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
+		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/samsung/Tizen.NET -->
 		<!-- <TargetFrameworks>$(TargetFrameworks);net9.0-tizen</TargetFrameworks> -->
-
-		<!-- Note for MacCatalyst:
-		The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
-		When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifier>.
-		The Mac App Store will NOT accept apps with ONLY maccatalyst-arm64 indicated;
-		either BOTH runtimes must be indicated or ONLY macatalyst-x64. -->
-		<!-- For example: <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers> -->
 
 		<OutputType>Exe</OutputType>
 		<RootNamespace>FSG_PushbackCreator</RootNamespace>
@@ -27,9 +20,11 @@
 		<!-- App Identifier -->
 		<ApplicationId>com.chrispriv.fsgpushbackcreator</ApplicationId>
 
-		<!-- Versions -->
-		<ApplicationDisplayVersion>1.2.0</ApplicationDisplayVersion>
-		<ApplicationVersion>102</ApplicationVersion>
+		<!-- Versions (PackageVersion must be the same for every TFM or restore fails with NU1105.) -->
+		<Version>1.3.0</Version>
+		<PackageVersion>1.3.0</PackageVersion>
+		<ApplicationDisplayVersion>1.3.0</ApplicationDisplayVersion>
+		<ApplicationVersion>103</ApplicationVersion>
 
 		<!-- Sideload APK (Release): ARM32/ARM64/x64, complete package. Debug leaves the RID to Visual Studio so the emulator gets a small x64 build. -->
 		<RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' AND '$(Configuration)' == 'Release'">android-arm;android-arm64;android-x64</RuntimeIdentifiers>
@@ -39,12 +34,20 @@
 		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
 		<WindowsPackageType>None</WindowsPackageType>
 
+		<!-- Xcode 26.6 ships the same Apple SDK as 26.5; MAUI still validates 26.5. -->
+		<ValidateXcodeVersion>false</ValidateXcodeVersion>
+
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst' AND '$(Configuration)' == 'Release'">
+		<!-- Apple Silicon plus Intel. Debug on the Mac uses the host RID only. -->
+		<RuntimeIdentifiers>maccatalyst-arm64;maccatalyst-x64</RuntimeIdentifiers>
 	</PropertyGroup>
 
 	<ItemGroup>

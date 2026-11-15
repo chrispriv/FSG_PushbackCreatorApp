@@ -25,6 +25,8 @@ public static class TmeStoreArchive
 			var basePath = $"{root}/scenery/airports/{folder}/{folder}";
 			zip.AddFile(basePath + ".tsc", Encoding.UTF8.GetBytes(TscWriter.Write(airport)));
 			zip.AddFile(basePath + ".wad", Encoding.UTF8.GetBytes(WadWriter.Write(airport)));
+			if (TocWriter.ShouldWrite(airport))
+				zip.AddFile(basePath + ".toc", Encoding.UTF8.GetBytes(TocWriter.Write(airport)));
 		}
 
 		return zip.ToArray();
