@@ -53,15 +53,16 @@ You can type coordinates from **any source**, or use **Google Earth** to place m
 
 Google Earth (optional):
 
-1. Open the airport (or helipad).
-2. Place a marker on the **helipad** and on each **pushback** stop.
-3. Unique names (`EPWA-H01`, `EPWA-A1`, …) make it easier to correct one point later.
-4. Copy **decimal** coordinates into the app (Google Earth decimal for better results). DMS is accepted but Google Earth often rounds it, which can shift the point by several metres.
+1. In Google Earth **Settings**, set the coordinate format to **decimal** (not degrees/minutes/seconds). DMS copy from Earth is rounded and typically shifts positions by several metres.
+2. Open the airport (or helipad).
+3. Place a marker on the **helipad** and on each **pushback** stop.
+4. Unique names (`EPWA-H01`, `EPWA-A1`, …) make it easier to correct one point later.
+5. Copy the **decimal** coordinates into the app.
 
 Accepted formats:
 
 - Decimal (preferred): `40.4675, 50.0539` or `40.4675 50.0539` (latitude first)
-- Google Earth DMS: `40°28'02.88"N 50°03'13.86"E` (space or comma between the two values)
+- DMS is still parsed if you paste it, but do not use Google Earth DMS for scenery work.
 
 Heading is degrees in the Aerofly sense. Parking size defaults to **35**. Helipad radius in the files is always **20**.
 
@@ -100,6 +101,8 @@ For each pushback stand:
    so the folder `{package}\airports\{code}\` appears under `addons\scenery`.
 3. Restart FS4.
 
+**One airport mod per ICAO:** Aerofly loads only **one** extra airport package for a given ICAO code at a time (for example one `EPWA00`). A second TME or scenery folder for the same airport is ignored and does not appear. Keep a single package for that ICAO, or merge airports into one project with **Add TME / Add ZIP** and export once.
+
 ## 7. Correct positions in Google Earth
 
 After a first export you can refine points:
@@ -112,7 +115,8 @@ You can also keep using your own named Google Earth markers the same way, withou
 
 ## 8. Tips
 
-- One project can hold many airports. Use **Add TME / Add ZIP** to combine packages, then export once.
+- One project can hold many **different** airports. Use **Add TME / Add ZIP** to combine packages, then export once.
+- Do not install two mods for the **same** ICAO at once; only one is used.
 - Re-export **replaces** TSC/WAD (and the airport `.toc` when a tower dummy or heliport objects are used) with this app’s layout. Import still reads `[sname]`, pushback-tagged parking, `tower_position`, `container` (and legacy `landrider01`), `airport_windsock_large1`, and `airportmast03`.
 - If Play Protect asks to scan a new APK, wait for the scan. A previous version of the app does not skip the scan for a new file.
 - Do not raise the helipad radius in a hex editor expecting the app to keep it: export always writes **20**.

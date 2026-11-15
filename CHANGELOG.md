@@ -17,8 +17,12 @@ Android versionCode **103**.
 ### Changed
 
 - Tower dummy XREF is **`container`** at scale **`0.0001`** (FSG and FS4). `landrider01` was too small or unsupported on FSG mobile; Open still reads it.
-- Coordinate field captions recommend **Google Earth decimal** (DMS from Earth is often rounded by a few metres).
+- Coordinate field captions recommend **Google Earth decimal**. Set Google Earth **Settings** to decimal; DMS from Earth is rounded and positions are inaccurate.
 - Airport edit screen uses a two-column field layout (heliport and pushback); phone portrait stacks the fields.
+
+### Notes
+
+- Aerofly uses only **one** extra airport mod per ICAO at a time. Other packages for the same airport are ignored.
 
 ## [1.2.0] — 2026-09-12
 

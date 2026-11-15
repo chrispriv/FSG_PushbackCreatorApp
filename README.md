@@ -8,7 +8,7 @@ The same project can be exported as:
 - **ZIP (FS4)** — scenery zip to unpack into `addons\scenery`
 - **KML** — Google Earth check of all helipad and pushback positions
 
-Current version: **1.3.0** (in progress, local). Android package id `com.chrispriv.fsgpushbackcreator`. Public GitHub release is still **1.2.0**.
+Current version: **1.3.0**. Android package id `com.chrispriv.fsgpushbackcreator`.
 
 | Document | Contents |
 | --- | --- |
@@ -26,13 +26,13 @@ Aerofly already has parking at many airports. This app writes **additional** dum
 
 Each place needs a **helipad** (radius is always **20** in the files). Without that helipad, FSG will not show the extra parking.
 
-You enter positions as **decimal or DMS** (from Google Earth or any other source). The app stores decimal coordinates and writes Aerofly `.tsc` / `.wad` files. A helipad is currently required so extra pushback parking appears in Aerofly.
+You enter positions as **decimal** (preferred) or DMS. Set Google Earth **Settings** to **decimal** before copying coordinates; DMS from Earth is rounded and the positions will be inaccurate. The app stores decimal coordinates and writes Aerofly `.tsc` / `.wad` files. A helipad is currently required so extra pushback parking appears in Aerofly.
 
 ## Download
 
 Windows (portable) and Android (APK) builds are on **[Releases](https://github.com/chrispriv/FSG_PushbackCreatorApp/releases)**.
 
-- **Android:** sideload `PushbackCreatorApp-1.2.0.apk` (arm, arm64, and x64 in one package). Allow install from the file manager. Google Play Protect may scan a **new** APK once; that scan is per file, not a Play Store listing.
+- **Android:** sideload `PushbackCreatorApp-1.3.0.apk` (arm, arm64, and x64 in one package). Allow install from the file manager. Google Play Protect may scan a **new** APK once; that scan is per file, not a Play Store listing.
 - **Windows:** download the portable zip, unpack it, run `FSG_PushbackCreatorApp.exe`. 64-bit Windows 10 (1809 or later) / Windows 11. No installer and no extra .NET install. Not the Microsoft Store.
 - **iOS / Mac:** not in the GitHub release packages yet. Build Mac Catalyst first (run on the Mac via Pair to Mac), then an iOS IPA later. Same bundle id as Android (`com.chrispriv.fsgpushbackcreator`) so a free Apple Personal Team only uses **one** App ID for Mac and iPad.
 
@@ -41,7 +41,7 @@ Windows (portable) and Android (APK) builds are on **[Releases](https://github.c
 1. **New**, or **Open TME / Open ZIP** to continue a package.
 2. Set the **project package name** (folder inside the TME/ZIP, default `pca_scenery_pushback`).
 3. **New** → pushback airport or heliport → 4-character ICAO, optional map name, helipad position and heading.
-4. Enter coordinates yourself, or optionally copy them from Google Earth markers (decimal or DMS).
+4. Enter coordinates yourself, or optionally copy them from Google Earth markers. In Google Earth **Settings**, switch to **decimal** first.
 5. For pushback airports: **New parking slot** for each gate (position, heading, size, name).
 6. **Export TME** for FSG and/or **Export ZIP (FS4)** for the PC. **Export KML** is optional, to review or move points in Google Earth.
 7. Copy the TME into FSG extra content, or unpack the FS4 zip into `addons\scenery`. Details: [GUIDE.md](GUIDE.md).
@@ -59,6 +59,8 @@ Windows (portable) and Android (APK) builds are on **[Releases](https://github.c
 `Documents\Aerofly FS 4\addons\scenery\{package}\airports\{code}\`
 
 Restart the simulator after copying files.
+
+Only **one** extra airport mod is active per ICAO at a time. A second package for the same airport (same `ICAO00` / same four-character heliport code) is ignored and does not appear. Merge into one project if you need several slots at the same place.
 
 ## Build from source (Windows PC)
 
