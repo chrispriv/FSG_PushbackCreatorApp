@@ -24,7 +24,7 @@ public static class TocParser
 				continue;
 
 			var xrefName = name.Groups[1].Value;
-			if (xrefName.Equals(TocWriter.DummyXrefName, StringComparison.OrdinalIgnoreCase))
+			if (IsTowerDummyXref(xrefName))
 			{
 				if (airport.Kind == AirportKind.Heliport)
 					continue;
@@ -53,6 +53,10 @@ public static class TocParser
 			}
 		}
 	}
+
+	static bool IsTowerDummyXref(string name) =>
+		name.Equals(TocWriter.DummyXrefName, StringComparison.OrdinalIgnoreCase) ||
+		name.Equals(TocWriter.LegacyDummyXrefName, StringComparison.OrdinalIgnoreCase);
 
 	static bool TryPosition(string body, out double longitude, out double latitude, out double height)
 	{
@@ -88,7 +92,7 @@ public static class TocParser
 			    <[cultivation][][]
 			        <[list_xref][xref_list][]
 			            <[xref][element][0]
-			                <[string8u][name][landrider01]>
+			                <[string8u][name][container]>
 			                <[vector3_float64][position][50.058596 40.459153 200.00]>
 			            >
 			        >
@@ -100,7 +104,7 @@ public static class TocParser
 		if (tower.TowerHeightAgl != 200 ||
 		    tower.TowerLongitude is not 50.058596 ||
 		    tower.TowerLatitude is not 40.459153)
-			throw new InvalidOperationException("TOC parser failed the landrider01 sample.");
+			throw new InvalidOperationException("TOC parser failed the container sample.");
 
 		const string heliportSample =
 			"""

@@ -2,20 +2,21 @@
 
 All notable changes to **Pushback Creator App** are listed here. Versions follow [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`). Android `versionCode` is noted in parentheses.
 
-## [1.3.0] — unreleased
+## [1.3.0] — 2026-11-15
 
-Android versionCode **103**. Work is on GitHub branch **1.3-devl**; **master** stays 1.2.0.
+Android versionCode **103**.
 
 ### Added
 
 - **Sort A–Z** on the airport list (next to **Quit project**): order by ICAO / TME code. Open/Add TME or ZIP no longer reorders airports.
 - **Sort A–Z** on the airport parking list (by slot name). **Cancel** on the airport screen restores the previous parking order.
 - **Mac / iOS export:** folder picker (Documents, Downloads, …) with a security-scoped bookmark, same approach as TgiModelTransformer.
-- Optional **tower position shift** and **tower height AGL** on pushback airports. Height **0** writes no `.toc`; any other height writes `{icao}00.toc` (`landrider01` dummy) and links it from the `.tsc` (`auto_height` / `use_height_offset`). **`[tower_position]`** is written in TSC and WAD (world units). **Export KML** adds a **Tower** pin. Tower position must not match the helipad or a parking slot.
+- Optional **tower position shift** and **tower height AGL** on pushback airports. Height **0** writes no `.toc`; any other height writes `{icao}00.toc` (`container` at scale `0.0001`) and links it from the `.tsc` (`auto_height` / `use_height_offset`). **`[tower_position]`** is written in TSC and WAD (world units). **Export KML** adds a **Tower** pin. Tower position must not match the helipad or a parking slot.
 - Optional **windsock** (`airport_windsock_large1`) and **helipad** (`airportmast03`, scale **2.5**, **−60.5 m**) on heliports. One row each, with a height offset (± m from 0; helipad offset is added to −60.5 m). Both use XREF `[direction]` from helipad heading (0 = heading 90°).
 
 ### Changed
 
+- Tower dummy XREF is **`container`** at scale **`0.0001`** (FSG and FS4). `landrider01` was too small or unsupported on FSG mobile; Open still reads it.
 - Coordinate field captions recommend **Google Earth decimal** (DMS from Earth is often rounded by a few metres).
 - Airport edit screen uses a two-column field layout (heliport and pushback); phone portrait stacks the fields.
 

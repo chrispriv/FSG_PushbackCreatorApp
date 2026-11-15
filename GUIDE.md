@@ -113,6 +113,6 @@ You can also keep using your own named Google Earth markers the same way, withou
 ## 8. Tips
 
 - One project can hold many airports. Use **Add TME / Add ZIP** to combine packages, then export once.
-- Re-export **replaces** TSC/WAD (and the airport `.toc` when a tower dummy or heliport objects are used) with this app’s layout. Import still reads `[sname]`, pushback-tagged parking, `tower_position`, `landrider01`, `airport_windsock_large1`, and `airportmast03`.
+- Re-export **replaces** TSC/WAD (and the airport `.toc` when a tower dummy or heliport objects are used) with this app’s layout. Import still reads `[sname]`, pushback-tagged parking, `tower_position`, `container` (and legacy `landrider01`), `airport_windsock_large1`, and `airportmast03`.
 - If Play Protect asks to scan a new APK, wait for the scan. A previous version of the app does not skip the scan for a new file.
 - Do not raise the helipad radius in a hex editor expecting the app to keep it: export always writes **20**.

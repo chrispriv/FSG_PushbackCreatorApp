@@ -6,8 +6,9 @@ namespace FSG_PushbackCreator.Services;
 
 public static class TocWriter
 {
-	public const string DummyXrefName = "landrider01";
-	public const string DummyScale = "0.001";
+	public const string DummyXrefName = "container";
+	public const string DummyScale = "0.0001";
+	public const string LegacyDummyXrefName = "landrider01";
 	public const string WindsockXrefName = "airport_windsock_large1";
 	public const string DummyHelipadXrefName = "airportmast03";
 
