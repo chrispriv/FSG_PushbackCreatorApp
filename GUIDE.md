@@ -47,9 +47,18 @@ This is the second screen.
 
 **Save** keeps the airport in the project. **Cancel** (or the Shell back arrow) discards unsaved field changes; a new airport that was never saved is removed from the list.
 
-## 4. Coordinates (Google Earth is optional)
+## 4. Coordinates (map, OSM search, or paste)
 
-You can type coordinates from **any source**, or use **Google Earth** to place markers and copy values.
+The airport screen is a **map workspace** (same split as TGI Model Transformer: inspector left / map right on a wide screen, inspector top / map bottom on a phone).
+
+1. If the airport has **no coordinates yet**, **Find location (OpenStreetMap)** is shown: search for the airport name or ICAO, pick a result to jump the map, then **tap the map** to place the **helipad** (airport location). After that the search panel hides.
+2. Other objects (tower, windsock, pushback slots, later XREF) are available only after the helipad is set.
+3. **Drag** the footprint or the round handle to move. Drag the **diamond** at the arrow tip to set **heading** (0 = north, clockwise). Helipad and parking headings are written back to the inspector.
+4. Helipad overlay is a **20 m circle**. Pushback overlays are **rectangles** from parking size. You can still paste decimal coordinates into the inspector fields.
+
+Imagery tiles are **Esri World Imagery** (XYZ, no app API key). Switch the layer control to **Streets** (OpenStreetMap) if you need labels. An internet connection is required for tiles and OSM search.
+
+Google Earth is optional for a second check or KML:
 
 Google Earth (optional):
 

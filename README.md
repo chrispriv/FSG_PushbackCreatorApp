@@ -8,7 +8,7 @@ The same project can be exported as:
 - **ZIP (FS4)** — scenery zip to unpack into `addons\scenery`
 - **KML** — Google Earth check of all helipad and pushback positions
 
-Current version: **1.3.0**. Android package id `com.chrispriv.fsgpushbackcreator`.
+Current version: **2.0.0** (development, branch `2.0-devl`). Android package id `com.chrispriv.fsgpushbackcreator`. Public GitHub release is still **1.3.0**.
 
 | Document | Contents |
 | --- | --- |
@@ -41,8 +41,8 @@ Windows (portable) and Android (APK) builds are on **[Releases](https://github.c
 1. **New**, or **Open TME / Open ZIP** to continue a package.
 2. Set the **project package name** (folder inside the TME/ZIP, default `pca_scenery_pushback`).
 3. **New** → pushback airport or heliport → 4-character ICAO, optional map name, helipad position and heading.
-4. Enter coordinates yourself, or optionally copy them from Google Earth markers. In Google Earth **Settings**, switch to **decimal** first.
-5. For pushback airports: **New parking slot** for each gate (position, heading, size, name).
+4. On the airport screen, use the **map** to place the helipad and other objects. If there are no coordinates yet, **Find location (OpenStreetMap)** jumps the map; then tap to place. You can still paste decimal coordinates. In Google Earth **Settings**, switch to **decimal** if you paste from Earth.
+5. For pushback airports: **New parking slot**, select it, tap the map. The rectangle is the stand size; the arrow is heading (0 = north).
 6. **Export TME** for FSG and/or **Export ZIP (FS4)** for the PC. **Export KML** is optional, to review or move points in Google Earth.
 7. Copy the TME into FSG extra content, or unpack the FS4 zip into `addons\scenery`. Details: [GUIDE.md](GUIDE.md).
 

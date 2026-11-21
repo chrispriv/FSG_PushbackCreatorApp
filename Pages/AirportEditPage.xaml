@@ -1,168 +1,245 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:models="clr-namespace:FSG_PushbackCreator.Models"
+             xmlns:services="clr-namespace:FSG_PushbackCreator.Services"
              x:Class="FSG_PushbackCreator.Pages.AirportEditPage"
-             Title="Airport">
+             Title="Airport"
+             Padding="16"
+             BackgroundColor="{StaticResource PageBackground}">
 
-    <Grid RowDefinitions="*,Auto"
-          Padding="16"
-          RowSpacing="12"
-          MaximumWidthRequest="1194"
-          HorizontalOptions="Center">
+    <Grid x:Name="MainGrid" ColumnSpacing="12" RowSpacing="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="380" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <ScrollView Grid.Row="0">
-            <VerticalStackLayout Spacing="8">
-                <Label x:Name="KindLabel" Style="{StaticResource SubHeadline}" />
+        <Grid x:Name="FormPanel" RowSpacing="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-                <Grid x:Name="IdentityGrid"
-                      ColumnDefinitions="*,1.25*"
-                      ColumnSpacing="12"
-                      RowSpacing="0">
-                    <VerticalStackLayout x:Name="IcaoBlock" Spacing="0">
-                        <Label Text="ICAO (4 characters)" Style="{StaticResource FieldCaption}" />
-                        <Entry x:Name="IcaoEntry"
-                               MaxLength="4"
-                               Placeholder="e.g. UBBN or CH99"
-                               Keyboard="Text"
-                               TextChanged="OnIcaoChanged" />
-                        <Label x:Name="TmeCodeLabel" />
-                    </VerticalStackLayout>
-                    <VerticalStackLayout x:Name="NameBlock" Grid.Column="1" Spacing="0">
-                        <Label x:Name="NameCaptionLabel" Style="{StaticResource FieldCaption}" />
-                        <Entry x:Name="NameEntry"
-                               MaxLength="32"
-                               Placeholder="Optional. Empty uses the TME code."
-                               Keyboard="Text" />
-                    </VerticalStackLayout>
-                </Grid>
+            <ScrollView>
+                <VerticalStackLayout Spacing="8" Padding="0,0,12,8">
+                    <Label x:Name="KindLabel" Style="{StaticResource SubHeadline}" LineBreakMode="NoWrap" />
 
-                <Grid x:Name="HelipadGrid"
-                      ColumnDefinitions="1.7*,*"
-                      ColumnSpacing="12"
-                      RowSpacing="0">
-                    <VerticalStackLayout x:Name="HelipadPositionBlock" Spacing="0">
-                        <Label Text="Helipad position (Google Earth decimal for better results)"
+                    <Grid x:Name="IdentityGrid"
+                          ColumnDefinitions="*,1.25*"
+                          ColumnSpacing="12">
+                        <VerticalStackLayout x:Name="IcaoBlock" Spacing="0">
+                            <HorizontalStackLayout Spacing="8">
+                                <Label Text="ICAO (4 chars)"
+                                       Style="{StaticResource FieldCaption}"
+                                       LineBreakMode="NoWrap" />
+                                <Label x:Name="TmeCodeLabel"
+                                       Style="{StaticResource FieldCaption}"
+                                       LineBreakMode="NoWrap"
+                                       VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                            <Entry x:Name="IcaoEntry"
+                                   MaxLength="4"
+                                   Placeholder="e.g. UBBN or CH99"
+                                   Keyboard="Text"
+                                   TextChanged="OnIcaoChanged" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout x:Name="NameBlock" Grid.Column="1" Spacing="0">
+                            <Label x:Name="NameCaptionLabel" Style="{StaticResource FieldCaption}" />
+                            <Entry x:Name="NameEntry"
+                                   MaxLength="32"
+                                   Placeholder="Optional. Empty uses the TME code."
+                                   Keyboard="Text" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Border x:Name="SearchPanel"
+                            Stroke="#333333"
+                            StrokeThickness="1"
+                            BackgroundColor="{StaticResource ChromeBackground}"
+                            Padding="10">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Find location (OpenStreetMap)" Style="{StaticResource FieldCaption}" Margin="0" />
+                            <Label Text="Use this when the airport has no coordinates yet. Search, pick a result, then tap the map to place the selected object."
+                                   FontSize="12"
+                                   TextColor="{StaticResource TextDim}"
+                                   LineBreakMode="WordWrap" />
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Entry x:Name="SearchEntry"
+                                       Placeholder="Airport name or ICAO"
+                                       Keyboard="Text"
+                                       ReturnType="Search"
+                                       Completed="OnSearchCompleted" />
+                                <Button Text="Search"
+                                        Style="{StaticResource QuietButton}"
+                                        Clicked="OnSearchClicked"
+                                        Grid.Column="1" />
+                            </Grid>
+                            <Label x:Name="SearchStatusLabel"
+                                   FontSize="12"
+                                   TextColor="{StaticResource TextDim}" />
+                            <CollectionView x:Name="SearchList"
+                                            IsVisible="False"
+                                            HeightRequest="110"
+                                            SelectionMode="Single"
+                                            SelectionChanged="OnSearchSelectionChanged">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="services:NominatimHit">
+                                        <Label Text="{Binding ListSummary}"
+                                               FontSize="12"
+                                               LineBreakMode="TailTruncation"
+                                               Padding="0,6" />
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Label Text="Map objects" Style="{StaticResource FieldCaption}" />
+                    <Grid x:Name="ParkingToolbar" ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Button x:Name="NewParkingButton"
+                                Text="New parking slot"
+                                Clicked="OnNewParking" />
+                        <Button x:Name="SortParkingButton"
+                                Grid.Column="1"
+                                Text="Sort A–Z"
+                                Style="{StaticResource QuietButton}"
+                                Clicked="OnSortParking" />
+                    </Grid>
+                    <Label x:Name="ParkingHintLabel" FontSize="12" TextColor="{StaticResource TextDim}" />
+                    <CollectionView x:Name="ObjectList"
+                                    SelectionMode="Single"
+                                    HeightRequest="150"
+                                    SelectionChanged="OnObjectSelectionChanged">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="services:MapObjectRow">
+                                <Label Text="{Binding Title}"
+                                       LineBreakMode="TailTruncation"
+                                       Padding="0,6" />
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <VerticalStackLayout x:Name="HelipadInspector" Spacing="0">
+                        <Label Text="Helipad position (tap map, drag, or paste decimal)"
                                Style="{StaticResource FieldCaption}" />
                         <Entry x:Name="HelipadPositionEntry"
                                Placeholder="40.4675, 50.0539"
-                               Keyboard="Text" />
-                    </VerticalStackLayout>
-                    <VerticalStackLayout x:Name="HelipadHeadingBlock" Grid.Column="1" Spacing="0">
+                               Keyboard="Text"
+                               Unfocused="OnHelipadFieldsChanged" />
                         <Label Text="Helipad heading (deg), default 0"
                                Style="{StaticResource FieldCaption}" />
-                        <Entry x:Name="HelipadHeadingEntry" Keyboard="Numeric" />
+                        <Entry x:Name="HelipadHeadingEntry"
+                               Keyboard="Numeric"
+                               Unfocused="OnHelipadFieldsChanged" />
+                        <VerticalStackLayout x:Name="HeliportObjectsSection" Spacing="0">
+                            <HorizontalStackLayout Spacing="8">
+                                <CheckBox x:Name="DummyHelipadCheck" VerticalOptions="Center" />
+                                <Label Text="Add helipad object"
+                                       Style="{StaticResource FieldCaption}"
+                                       VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                            <Label Text="Helipad height offset m (optional, 0 = default)"
+                                   Style="{StaticResource FieldCaption}" />
+                            <Entry x:Name="HelipadHeightOffsetEntry"
+                                   Placeholder="0"
+                                   Keyboard="Numeric" />
+                        </VerticalStackLayout>
                     </VerticalStackLayout>
-                </Grid>
 
-                <Grid x:Name="TowerGrid"
-                      ColumnDefinitions="1.7*,*"
-                      ColumnSpacing="12"
-                      RowSpacing="0">
-                    <VerticalStackLayout x:Name="TowerPositionBlock" Spacing="0">
-                        <Label Text="Tower position shift (optional, Google Earth decimal for better results)"
+                    <VerticalStackLayout x:Name="TowerInspector" Spacing="0" IsVisible="False">
+                        <Label Text="Tower position shift (optional; tap map or paste decimal)"
                                Style="{StaticResource FieldCaption}" />
                         <Entry x:Name="TowerPositionEntry"
                                Placeholder="Optional. Empty = no tower shift."
-                               Keyboard="Text" />
-                    </VerticalStackLayout>
-                    <VerticalStackLayout x:Name="TowerHeightBlock" Grid.Column="1" Spacing="0">
+                               Keyboard="Text"
+                               Unfocused="OnTowerFieldsChanged" />
                         <Label Text="Tower height AGL m (optional, 0 = default)"
                                Style="{StaticResource FieldCaption}" />
                         <Entry x:Name="TowerHeightEntry"
                                Placeholder="0"
                                Keyboard="Numeric" />
                     </VerticalStackLayout>
-                </Grid>
 
-                <VerticalStackLayout x:Name="HeliportObjectsSection" Spacing="0">
-                    <Grid x:Name="WindsockGrid"
-                          ColumnDefinitions="1.7*,*"
-                          ColumnSpacing="12"
-                          RowSpacing="0">
-                        <VerticalStackLayout x:Name="WindsockBlock" Spacing="0">
-                            <Label Text="Windsock (optional, Google Earth decimal for better results)"
-                                   Style="{StaticResource FieldCaption}" />
-                            <Entry x:Name="WindsockPositionEntry"
-                                   Placeholder="Optional. Empty = no windsock."
-                                   Keyboard="Text" />
-                        </VerticalStackLayout>
-                        <VerticalStackLayout x:Name="WindsockHeightBlock" Grid.Column="1" Spacing="0">
-                            <Label Text="Height offset m (optional, 0 = default)"
-                                   Style="{StaticResource FieldCaption}" />
-                            <Entry x:Name="WindsockHeightEntry"
-                                   Placeholder="0"
-                                   Keyboard="Numeric" />
-                        </VerticalStackLayout>
-                    </Grid>
-                    <Grid x:Name="HelipadObjectGrid"
-                          ColumnDefinitions="1.7*,*"
-                          ColumnSpacing="12"
-                          RowSpacing="0">
-                        <VerticalStackLayout x:Name="DummyHelipadBlock" Spacing="0">
-                            <Label Text="Helipad (optional, same position as helipad position)"
-                                   Style="{StaticResource FieldCaption}" />
-                            <HorizontalStackLayout Spacing="8">
-                                <CheckBox x:Name="DummyHelipadCheck" VerticalOptions="Center" />
-                                <Label Text="Add helipad"
-                                       Style="{StaticResource FieldCaption}"
-                                       VerticalOptions="Center" />
-                            </HorizontalStackLayout>
-                        </VerticalStackLayout>
-                        <VerticalStackLayout x:Name="HelipadHeightBlock" Grid.Column="1" Spacing="0">
-                            <Label Text="Height offset m (optional, 0 = default)"
-                                   Style="{StaticResource FieldCaption}" />
-                            <Entry x:Name="HelipadHeightOffsetEntry"
-                                   Placeholder="0"
-                                   Keyboard="Numeric" />
-                        </VerticalStackLayout>
-                    </Grid>
+                    <VerticalStackLayout x:Name="WindsockInspector" Spacing="0" IsVisible="False">
+                        <Label Text="Windsock (optional; tap map or paste decimal)"
+                               Style="{StaticResource FieldCaption}" />
+                        <Entry x:Name="WindsockPositionEntry"
+                               Placeholder="Optional. Empty = no windsock."
+                               Keyboard="Text"
+                               Unfocused="OnWindsockFieldsChanged" />
+                        <Label Text="Height offset m (optional, 0 = default)"
+                               Style="{StaticResource FieldCaption}" />
+                        <Entry x:Name="WindsockHeightEntry"
+                               Placeholder="0"
+                               Keyboard="Numeric" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout x:Name="ParkingInspector" Spacing="0" IsVisible="False">
+                        <Label Text="Parking name (gate), e.g. A1" Style="{StaticResource FieldCaption}" />
+                        <Entry x:Name="ParkingNameEntry"
+                               Placeholder="A1"
+                               Unfocused="OnParkingFieldsChanged" />
+                        <Label Text="Parking position (tap map, drag, or paste decimal)"
+                               Style="{StaticResource FieldCaption}" />
+                        <Entry x:Name="ParkingPositionEntry"
+                               Placeholder="40.4675, 50.0539"
+                               Keyboard="Text"
+                               Unfocused="OnParkingFieldsChanged" />
+                        <Label Text="Parking heading (deg), default 0" Style="{StaticResource FieldCaption}" />
+                        <Entry x:Name="ParkingHeadingEntry"
+                               Keyboard="Numeric"
+                               Unfocused="OnParkingFieldsChanged" />
+                        <Label Text="Parking size, default 35" Style="{StaticResource FieldCaption}" />
+                        <Entry x:Name="ParkingSizeEntry"
+                               Keyboard="Numeric"
+                               Unfocused="OnParkingFieldsChanged" />
+                        <Button Text="Delete parking slot"
+                                Style="{StaticResource QuietButton}"
+                                Clicked="OnDeleteSelectedParking" />
+                    </VerticalStackLayout>
                 </VerticalStackLayout>
+            </ScrollView>
 
-                <VerticalStackLayout x:Name="ParkingSection" Spacing="8">
-                <Label Text="Pushback parking slots" Style="{StaticResource SubHeadline}" Margin="0,16,0,0" />
-                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                    <Button x:Name="NewParkingButton"
-                            Text="New parking slot"
-                            Clicked="OnNewParking" />
-                    <Button x:Name="SortParkingButton"
-                            Grid.Column="2"
-                            Text="Sort A–Z"
-                            Clicked="OnSortParking" />
-                </Grid>
-                <Label x:Name="ParkingHintLabel" />
+            <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Button Text="Save" Clicked="OnSave" />
+                <Button Grid.Column="1"
+                        Text="Cancel"
+                        Style="{StaticResource QuietButton}"
+                        Clicked="OnCancel" />
+            </Grid>
+        </Grid>
 
-                <CollectionView x:Name="ParkingList" SelectionMode="None" HeightRequest="280">
-                    <CollectionView.EmptyView>
-                        <Label Text="No parking slots yet."
-                               Margin="0,12,0,0" />
-                    </CollectionView.EmptyView>
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:ParkingSlot">
-                            <VerticalStackLayout Padding="0,6" Spacing="4">
-                                <Label Text="{Binding ListSummary}" LineBreakMode="TailTruncation" />
-                                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                                    <Button Text="Edit" Clicked="OnEditParking" CommandParameter="{Binding .}" />
-                                    <Button Grid.Column="1"
-                                            Text="Delete"
-                                            Style="{StaticResource QuietButton}"
-                                            Clicked="OnDeleteParking"
-                                            CommandParameter="{Binding .}" />
-                                </Grid>
-                            </VerticalStackLayout>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-                </VerticalStackLayout>
-            </VerticalStackLayout>
-        </ScrollView>
-
-        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="8">
-            <Button Text="Save" Clicked="OnSave" />
-            <Button Grid.Column="1"
-                    Text="Cancel"
-                    Style="{StaticResource QuietButton}"
-                    Clicked="OnCancel" />
+        <Grid x:Name="MapPanel" Grid.Column="1" RowSpacing="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Border Stroke="#333333" StrokeThickness="1" BackgroundColor="{StaticResource PageBackground}">
+                <HybridWebView x:Name="MapView"
+                               HybridRoot="wwwroot"
+                               DefaultFile="index.html"
+                               RawMessageReceived="OnMapMessage" />
+            </Border>
+            <Grid Grid.Row="1" ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Label x:Name="MapHintLabel"
+                       Text="Place the helipad first. Then drag a footprint to move it, or drag the diamond on the arrow to set heading (0 = north)."
+                       FontSize="12"
+                       TextColor="{StaticResource TextDim}"
+                       VerticalOptions="Center"
+                       LineBreakMode="WordWrap" />
+                <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                    <Button Text="Zoom −" Style="{StaticResource QuietButton}" Clicked="OnZoomOut" />
+                    <Button Text="Zoom +" Style="{StaticResource QuietButton}" Clicked="OnZoomIn" />
+                    <Button Text="Fit" Style="{StaticResource QuietButton}" Clicked="OnFitMap" />
+                </HorizontalStackLayout>
+            </Grid>
         </Grid>
     </Grid>
 </ContentPage>

@@ -2,6 +2,19 @@
 
 All notable changes to **Pushback Creator App** are listed here. Versions follow [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`). Android `versionCode` is noted in parentheses.
 
+## [2.0.0] — unreleased (branch `2.0-devl`)
+
+Android versionCode **200**.
+
+### Added
+
+- Airport editor **map** (Leaflet in a HybridWebView): Esri World Imagery XYZ tiles, optional OSM streets, no map API key.
+- TGI-style split layout: inspector left / map right (wide), inspector top / map bottom (narrow).
+- Place and move **helipad**, **tower**, **windsock**, and **pushback** objects on the map. Parking uses a heading-aligned rectangle (`size`); helipad uses a 20 m circle. A **heading arrow** is drawn on every placed object.
+- **OpenStreetMap Nominatim** search only until the helipad (airport location) is set; the panel then hides. Tower, parking, windsock (and later XREF) stay unavailable until that location exists.
+- Drag a footprint or the round handle to **move**. Drag the diamond on the heading arrow to set **heading** (helipad and parking).
+- Parking slots are edited in the inspector (no extra parking page in the map workflow).
+
 ## [1.3.0] — 2026-11-15
 
 Android versionCode **103**.
