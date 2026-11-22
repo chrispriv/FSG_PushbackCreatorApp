@@ -93,7 +93,7 @@
     }
 
     function canRotate(item) {
-        return item.kind === "helipad" || item.kind === "parking";
+        return item.kind === "helipad" || item.kind === "parking" || item.kind === "windsock";
     }
 
     function findItem(id) {

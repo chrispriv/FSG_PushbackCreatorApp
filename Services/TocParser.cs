@@ -13,6 +13,8 @@ public static class TocParser
 	static readonly Regex Position3 = new(
 		@"\[vector3_float64\]\[position\]\[([^\]]+)\]",
 		RegexOptions.CultureInvariant);
+	static readonly Regex DirectionField = new(@"\[direction\]\[([^\]]+)\]", RegexOptions.CultureInvariant);
+	static readonly Regex ScaleField = new(@"\[scale_factor\]\[([^\]]+)\]", RegexOptions.CultureInvariant);
 
 	public static void Apply(AirportEntry airport, string toc)
 	{
@@ -41,6 +43,10 @@ public static class TocParser
 				airport.WindsockLongitude = lon;
 				airport.WindsockLatitude = lat;
 				airport.WindsockHeightOffset = height;
+				if (TryNumber(DirectionField.Match(body).Groups[1].Value, out var direction))
+					airport.WindsockDirection = direction;
+				if (TryNumber(ScaleField.Match(body).Groups[1].Value, out var scale) && scale > 0)
+					airport.WindsockScale = scale;
 			}
 			else if (xrefName.Equals(TocWriter.DummyHelipadXrefName, StringComparison.OrdinalIgnoreCase))
 			{

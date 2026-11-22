@@ -33,7 +33,7 @@ public static class TscWriter
 		Line(sb, "            <[tmsimulator_helipad][element][0]");
 		Line(sb, "                <[string8][name][H01]>");
 		Line(sb, $"                <[vector2_float64][position][{FormatLonLat(lon, lat)}]>");
-		Line(sb, $"                <[float64][radius][{FormatNumber(AirportEntry.DefaultHelipadRadius)}]>");
+		Line(sb, $"                <[float64][radius][{FormatNumber(airport.EffectiveHelipadRadius)}]>");
 		Line(sb, $"                <[float64][heading][{FormatNumber(airport.HelipadHeading)}]>");
 		Line(sb, "            >");
 		Line(sb, "        >");
@@ -59,7 +59,7 @@ public static class TscWriter
 		Line(sb, "");
 		Line(sb, "        >");
 		Line(sb, "");
-		if (airport.WritesToc)
+		if (airport.WritesAirportToc)
 		{
 			Line(sb, "        <[list_tmsimulator_scenery_cultivation][cultivation_files][]");
 			Line(sb, "            <[tmsimulator_scenery_cultivation][element][0]");

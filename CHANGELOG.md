@@ -10,11 +10,21 @@ Android versionCode **200**.
 
 - Airport editor **map** (Leaflet in a HybridWebView): Esri World Imagery XYZ tiles, optional OSM streets, no map API key.
 - TGI-style split layout: inspector left / map right (wide), inspector top / map bottom (narrow).
-- Place and move **helipad**, **tower**, **windsock**, and **pushback** objects on the map. Parking uses a heading-aligned rectangle (`size`); helipad uses a 20 m circle. A **heading arrow** is drawn on every placed object.
+- Place and move **helipad**, **tower**, **windsock**, and **pushback** objects on the map. Parking uses a heading-aligned rectangle (`size`); helipad uses a circle from **radius** (default 20 m). A **heading arrow** is drawn on placed objects that have a heading.
 - **OpenStreetMap Nominatim** search only until the helipad (airport location) is set; the panel then hides. Tower, parking, windsock (and later XREF) stay unavailable until that location exists.
-- Drag a footprint or the round handle to **move**. Drag the diamond on the heading arrow to set **heading** (helipad and parking). The tower is a point only (all-round view, no heading overlay).
+- Drag a footprint or the round handle to **move**. Drag the diamond on the heading arrow to set **heading** (helipad, parking, and windsock). The tower is a point only (all-round view, no heading overlay).
 - Optional **tower** on heliports, same TSC/WAD/`container` dummy as pushback airports.
+- Helipad **radius** field (before heading); TSC/WAD `[radius]` is imported and exported; the map circle uses that value.
+- Windsock **direction** and **scale factor** (before height offset) for future XREF objects. Map square orientation follows direction; scale sizes the placeholder square. `airportmast03` stays on helipad heading and fixed scale 2.5.
 - Parking slots are edited in the inspector (no extra parking page in the map workflow).
+- **XREF objects** export as a scenery **POI** (`scenery/poi/{e#####n####}_pca_{code}/`) with a buried `pct_anchor.tmb` / `pct_anchor.ttx` so autoheight uses terrain: heliport windsock, dummy helipad, and tower dummy; pushback **tower dummy** the same way. Airport TSC no longer links a `.toc`. Open still reads a legacy airport `.toc`.
+
+### Changed
+
+- Coordinate **input is decimal only** (`lat, lon` or `lat lon`). Degrees/minutes paste is rejected so Google Earth DMS cannot shift positions.
+- Home screen Google Earth note: **Export KML**, plus optional decimal copy/paste after Google Earth **Settings → decimal**.
+- Heliport name caption is **Optional** (short enough for phone portrait).
+- Windows **Export** picks a **folder** (same idea as Mac) and writes `{package}.tme` / `.zip` / `.kml` there. Save no longer navigates into a highlighted subfolder; an existing file in that folder asks before replace.
 
 ## [1.3.0] — 2026-11-15
 

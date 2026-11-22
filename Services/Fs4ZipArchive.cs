@@ -5,7 +5,7 @@ using FSG_PushbackCreator.Models;
 namespace FSG_PushbackCreator.Services;
 
 /// <summary>
-/// Normal Windows ZIP: package\airports\{code}\{code}.tsc|wad for Aerofly FS4 addons\scenery.
+/// Normal Windows ZIP: package\airports\{code}\ and package\poi\{grid}_pca_{code}\ for Aerofly FS4 addons\scenery.
 /// </summary>
 public static class Fs4ZipArchive
 {
@@ -30,8 +30,26 @@ public static class Fs4ZipArchive
 				var basePath = $"{root}/airports/{folder}/{folder}";
 				AddFile(zip, basePath + ".tsc", Encoding.UTF8.GetBytes(TscWriter.Write(airport)));
 				AddFile(zip, basePath + ".wad", Encoding.UTF8.GetBytes(WadWriter.Write(airport)));
-				if (TocWriter.ShouldWrite(airport))
+				if (TocWriter.ShouldWriteAirportFile(airport))
 					AddFile(zip, basePath + ".toc", Encoding.UTF8.GetBytes(TocWriter.Write(airport)));
+			}
+
+			var poiRoot = $"{root}/poi";
+			var wrotePoiRoot = false;
+			foreach (var airport in project.Airports)
+			{
+				if (!PoiWriter.ShouldWrite(airport))
+					continue;
+				if (!wrotePoiRoot)
+				{
+					AddDirectory(zip, $"{poiRoot}/");
+					wrotePoiRoot = true;
+				}
+
+				var poiFolder = PoiWriter.FolderName(airport);
+				AddDirectory(zip, $"{poiRoot}/{poiFolder}/");
+				foreach (var (relativePath, data) in PoiWriter.Files(airport))
+					AddFile(zip, $"{poiRoot}/{relativePath}", data);
 			}
 		}
 

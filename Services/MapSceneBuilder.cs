@@ -44,7 +44,7 @@ public static class MapSceneBuilder
 			Lat = airport.HelipadLatitude,
 			Lon = airport.HelipadLongitude,
 			Heading = airport.HelipadHeading,
-			RadiusM = AirportEntry.DefaultHelipadRadius
+			RadiusM = airport.EffectiveHelipadRadius
 		});
 
 		if (!scene.AirportLocated)
@@ -85,9 +85,9 @@ public static class MapSceneBuilder
 				Label = "Windsock",
 				Lat = airport.WindsockLatitude,
 				Lon = airport.WindsockLongitude,
-				Heading = airport.HelipadHeading,
-				LengthM = 6,
-				WidthM = 6
+				Heading = TocWriter.XrefDirectionToHeading(airport.WindsockDirection),
+				LengthM = 6 * airport.EffectiveWindsockScale,
+				WidthM = 6 * airport.EffectiveWindsockScale
 			});
 		}
 

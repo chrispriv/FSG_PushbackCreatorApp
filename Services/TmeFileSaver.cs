@@ -15,25 +15,41 @@ public static class TmeFileSaver
 		var suggestedFile = suggested + extension;
 
 #if WINDOWS
+		_ = fileTypeName;
 		var window = Application.Current?.Windows.FirstOrDefault()?.Handler?.PlatformView as Microsoft.UI.Xaml.Window;
 		if (window is null)
 			return null;
 
-		var picker = new Windows.Storage.Pickers.FileSavePicker();
+		var picker = new Windows.Storage.Pickers.FolderPicker();
 		var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
 		WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
-		picker.SuggestedFileName = suggested;
-		picker.FileTypeChoices.Add(fileTypeName, [extension]);
-		picker.DefaultFileExtension = extension;
+		picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Downloads;
+		picker.FileTypeFilter.Add("*");
 
-		var file = await picker.PickSaveFileAsync();
-		if (file is null)
+		var folder = await picker.PickSingleFolderAsync();
+		if (folder is null)
 			return null;
 
-		var package = PackageNames.FromFileName(file.Name);
+		var path = Path.Combine(folder.Path, suggestedFile);
+		if (File.Exists(path))
+		{
+			var page = Application.Current?.Windows.FirstOrDefault()?.Page;
+			if (page is not null)
+			{
+				var replace = await page.DisplayAlert(
+					"Replace file?",
+					$"{suggestedFile} already exists in this folder. Replace it?",
+					"Replace",
+					"Cancel");
+				if (!replace)
+					return null;
+			}
+		}
+
+		var package = suggested;
 		var bytes = build(package);
-		await File.WriteAllBytesAsync(file.Path, bytes);
-		return file.Path;
+		await File.WriteAllBytesAsync(path, bytes);
+		return path;
 #elif ANDROID
 		_ = fileTypeName;
 		var mime = extension.Equals(".zip", StringComparison.OrdinalIgnoreCase)

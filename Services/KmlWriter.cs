@@ -57,7 +57,7 @@ public static class KmlWriter
 		{
 			children.Add(Placemark(
 				"Helipad H01",
-				$"ICAO {airport.Icao4}\nTME {airport.TmeCode}\nHeading {FormatNumber(airport.HelipadHeading)} deg\nRadius {FormatNumber(AirportEntry.DefaultHelipadRadius)} m" +
+				$"ICAO {airport.Icao4}\nTME {airport.TmeCode}\nHeading {FormatNumber(airport.HelipadHeading)} deg\nRadius {FormatNumber(airport.EffectiveHelipadRadius)} m" +
 				(airport.HasDummyHelipad ? "\nHelipad object on" : string.Empty),
 				hlon,
 				hlat));
@@ -67,7 +67,7 @@ public static class KmlWriter
 		{
 			children.Add(Placemark(
 				"Windsock",
-				$"ICAO {airport.Icao4}\nTME {airport.TmeCode}",
+				$"ICAO {airport.Icao4}\nTME {airport.TmeCode}\nDirection {FormatNumber(airport.WindsockDirection)} deg\nScale {FormatNumber(airport.EffectiveWindsockScale)}",
 				airport.WindsockLongitude!.Value,
 				airport.WindsockLatitude!.Value));
 		}

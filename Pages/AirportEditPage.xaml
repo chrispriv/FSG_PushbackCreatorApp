@@ -136,6 +136,11 @@
                                Placeholder="40.4675, 50.0539"
                                Keyboard="Text"
                                Unfocused="OnHelipadFieldsChanged" />
+                        <Label Text="Helipad radius m, default 20"
+                               Style="{StaticResource FieldCaption}" />
+                        <Entry x:Name="HelipadRadiusEntry"
+                               Keyboard="Numeric"
+                               Unfocused="OnHelipadFieldsChanged" />
                         <Label Text="Helipad heading (deg), default 0"
                                Style="{StaticResource FieldCaption}" />
                         <Entry x:Name="HelipadHeadingEntry"
@@ -176,6 +181,16 @@
                         <Entry x:Name="WindsockPositionEntry"
                                Placeholder="Optional. Empty = no windsock."
                                Keyboard="Text"
+                               Unfocused="OnWindsockFieldsChanged" />
+                        <Label Text="Direction (deg), default 0 (east)"
+                               Style="{StaticResource FieldCaption}" />
+                        <Entry x:Name="WindsockDirectionEntry"
+                               Keyboard="Numeric"
+                               Unfocused="OnWindsockFieldsChanged" />
+                        <Label Text="Scale factor, default 1"
+                               Style="{StaticResource FieldCaption}" />
+                        <Entry x:Name="WindsockScaleEntry"
+                               Keyboard="Numeric"
                                Unfocused="OnWindsockFieldsChanged" />
                         <Label Text="Height offset m (optional, 0 = default)"
                                Style="{StaticResource FieldCaption}" />

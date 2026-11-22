@@ -74,7 +74,7 @@ public partial class ParkingEditPage : ContentPage, IShellBackHandler
 		if (string.IsNullOrWhiteSpace(positionText) ||
 		    !GeoCoordinateParser.TryParse(positionText, out var lat, out var lon))
 		{
-			error = "Parking position is required. Paste Google Earth decimal (lat, lon) for better results. A space or comma between the two values.";
+			error = "Parking position is required. Paste decimal lat, lon. A space or comma between the two values.";
 			return false;
 		}
 

@@ -252,7 +252,7 @@ public partial class AirportListPage : ContentPage, IShellBackHandler
 			if (markExported)
 				ProjectSession.MarkExported();
 			var extra = extension.Equals(".zip", StringComparison.OrdinalIgnoreCase)
-				? $"\n\nUnpack into Aerofly FS 4:\naddons\\scenery\\{ProjectSession.Current.PackageFolderName}"
+				? $"\n\nUnpack into Aerofly FS 4:\naddons\\scenery\\\nAirports are under airports\\. XREF objects (tower dummy, windsock, helipad object) are under poi\\ (terrain autoheight)."
 				: extension.Equals(".kml", StringComparison.OrdinalIgnoreCase)
 					? "\n\nOpen in Google Earth to check helipad, tower, windsock, and pushback positions."
 					: $"\n\nPackage folder: {ProjectSession.Current.PackageFolderName}";

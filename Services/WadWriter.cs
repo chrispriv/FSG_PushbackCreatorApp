@@ -26,7 +26,7 @@ public static class WadWriter
 		Line(sb, "            <[tmworld_airport_detailed_helipad][element][0]");
 		Line(sb, "                <[string8][name][H01]>");
 		Line(sb, $"                <[vector2_float64][position][{world}]>");
-		Line(sb, $"                <[float64][radius][{FormatNumber(AirportEntry.DefaultHelipadRadius)}]>");
+		Line(sb, $"                <[float64][radius][{FormatNumber(airport.EffectiveHelipadRadius)}]>");
 		Line(sb, $"                <[float64][direction][{FormatDirection(airport.HelipadHeading)}]>");
 		Line(sb, "            >");
 		Line(sb, "        >");

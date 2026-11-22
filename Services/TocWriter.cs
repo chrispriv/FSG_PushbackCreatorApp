@@ -14,6 +14,8 @@ public static class TocWriter
 
 	public static bool ShouldWrite(AirportEntry airport) => airport.WritesToc;
 
+	public static bool ShouldWriteAirportFile(AirportEntry airport) => airport.WritesAirportToc;
+
 	public static string Write(AirportEntry airport)
 	{
 		if (!airport.WritesToc)
@@ -57,8 +59,8 @@ public static class TocWriter
 				airport.WindsockLongitude!.Value,
 				airport.WindsockLatitude!.Value,
 				airport.WindsockTocHeight,
-				HeadingToXrefDirection(airport.HelipadHeading),
-				"1");
+				WadCoordinateConverter.NormalizeHeading(airport.WindsockDirection),
+				airport.EffectiveWindsockScale.ToString("0.###", CultureInfo.InvariantCulture));
 		}
 
 		Line(sb, "        >");
@@ -81,6 +83,14 @@ public static class TocWriter
 		if (degrees < 0)
 			degrees += 360.0;
 		return degrees;
+	}
+
+	/// <summary>Inverse of <see cref="HeadingToXrefDirection"/> for map overlay (0 = north).</summary>
+	public static double XrefDirectionToHeading(double directionDegrees)
+	{
+		var dir = WadCoordinateConverter.NormalizeHeading(directionDegrees);
+		var heading = dir <= 90 ? 90 - dir : 450 - dir;
+		return WadCoordinateConverter.NormalizeHeading(heading);
 	}
 
 	static void WriteXref(

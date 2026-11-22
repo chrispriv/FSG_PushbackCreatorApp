@@ -25,8 +25,26 @@ public static class TmeStoreArchive
 			var basePath = $"{root}/scenery/airports/{folder}/{folder}";
 			zip.AddFile(basePath + ".tsc", Encoding.UTF8.GetBytes(TscWriter.Write(airport)));
 			zip.AddFile(basePath + ".wad", Encoding.UTF8.GetBytes(WadWriter.Write(airport)));
-			if (TocWriter.ShouldWrite(airport))
+			if (TocWriter.ShouldWriteAirportFile(airport))
 				zip.AddFile(basePath + ".toc", Encoding.UTF8.GetBytes(TocWriter.Write(airport)));
+		}
+
+		var poiRoot = $"{root}/scenery/poi";
+		var wrotePoiRoot = false;
+		foreach (var airport in project.Airports)
+		{
+			if (!PoiWriter.ShouldWrite(airport))
+				continue;
+			if (!wrotePoiRoot)
+			{
+				zip.AddDirectory($"{poiRoot}/");
+				wrotePoiRoot = true;
+			}
+
+			var poiFolder = PoiWriter.FolderName(airport);
+			zip.AddDirectory($"{poiRoot}/{poiFolder}/");
+			foreach (var (relativePath, data) in PoiWriter.Files(airport))
+				zip.AddFile($"{poiRoot}/{relativePath}", data);
 		}
 
 		return zip.ToArray();

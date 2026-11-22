@@ -36,7 +36,7 @@
                                TextColor="{StaticResource LinkBlue}"
                                FontAttributes="Bold"
                                FontSize="12" />
-                        <Label Text="Place named markers (for example UBBN-A1) and copy decimal coordinates into this app. Decimal is more accurate than degrees/minutes. Unique names make it easy to correct a position later."
+                        <Label Text="Export a project as KML for Google Earth. You can still paste decimal coordinates instead of using the map: in Google Earth Settings, switch the coordinate format to decimal, then copy/paste into the inspector."
                                Style="{StaticResource FieldCaption}"
                                Margin="0" />
                     </VerticalStackLayout>

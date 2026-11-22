@@ -17,6 +17,8 @@ public sealed class AirportEntry : ObservableEntity
 	double _towerHeightAgl;
 	double? _windsockLatitude;
 	double? _windsockLongitude;
+	double _windsockDirection;
+	double _windsockScale = DefaultWindsockScale;
 	double _windsockHeightOffset;
 	bool _dummyHelipadEnabled;
 	double _helipadHeightOffset;
@@ -24,6 +26,7 @@ public sealed class AirportEntry : ObservableEntity
 	public const double DefaultHelipadRadius = 20;
 	public const double DummyHelipadHeightAgl = -60.5;
 	public const double DummyHelipadScale = 2.5;
+	public const double DefaultWindsockScale = 1;
 
 	public Guid Id { get; } = Guid.NewGuid();
 
@@ -99,6 +102,8 @@ public sealed class AirportEntry : ObservableEntity
 		set => Set(ref _helipadRadius, value);
 	}
 
+	public double EffectiveHelipadRadius => HelipadRadius > 0 ? HelipadRadius : DefaultHelipadRadius;
+
 	public double HelipadHeading
 	{
 		get => _helipadHeading;
@@ -125,7 +130,7 @@ public sealed class AirportEntry : ObservableEntity
 		}
 	}
 
-	/// <summary>Height above ground in metres. 0 is the default (no dummy .toc). Pushback airports only.</summary>
+	/// <summary>Height above ground in metres. 0 skips the tower dummy. Non-zero height is written in the POI .toc (terrain autoheight), not in the airport folder.</summary>
 	public double TowerHeightAgl
 	{
 		get => _towerHeightAgl;
@@ -159,6 +164,22 @@ public sealed class AirportEntry : ObservableEntity
 				Raise(nameof(ListSummary));
 		}
 	}
+
+	/// <summary>TOC XREF [direction] in degrees (0 = east). Independent of helipad heading.</summary>
+	public double WindsockDirection
+	{
+		get => _windsockDirection;
+		set => Set(ref _windsockDirection, value);
+	}
+
+	/// <summary>TOC XREF [scale_factor]. Default 1.</summary>
+	public double WindsockScale
+	{
+		get => _windsockScale;
+		set => Set(ref _windsockScale, value);
+	}
+
+	public double EffectiveWindsockScale => WindsockScale > 0 ? WindsockScale : DefaultWindsockScale;
 
 	public double WindsockHeightOffset
 	{
@@ -201,6 +222,9 @@ public sealed class AirportEntry : ObservableEntity
 	public double HelipadTocHeight => DummyHelipadHeightAgl + HelipadHeightOffset;
 
 	public bool WritesToc => WritesTowerDummy || HasWindsock || HasDummyHelipad;
+
+	/// <summary>Airport-folder .toc is unused: XREF objects go to a POI. Kept so Open still reads a legacy airport .toc.</summary>
+	public bool WritesAirportToc => false;
 
 	public ObservableCollection<ParkingSlot> ParkingSlots { get; } = [];
 

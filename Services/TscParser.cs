@@ -17,6 +17,7 @@ public static class TscParser
 		@"<\[tmsimulator_parking_position\]\[element\]\[\d+\](?<body>.*?)(?:\n|\r)\s*>",
 		RegexOptions.Singleline | RegexOptions.CultureInvariant);
 	static readonly Regex HeadingField = new(@"\[float64\]\[heading\]\[([^\]]+)\]", RegexOptions.CultureInvariant);
+	static readonly Regex RadiusField = new(@"\[float64\]\[radius\]\[([^\]]+)\]", RegexOptions.CultureInvariant);
 	static readonly Regex SizeField = new(@"\[float64\]\[size\]\[([^\]]+)\]", RegexOptions.CultureInvariant);
 	static readonly Regex NameField = new(@"\[string8\]\[name\]\[([^\]]+)\]", RegexOptions.CultureInvariant);
 	static readonly Regex PushbackTag = new(@"\[tags\]\[pushback\]", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
@@ -81,7 +82,8 @@ public static class TscParser
 
 			if (TryNumber(HeadingField.Match(body).Groups[1].Value, out var heading))
 				airport.HelipadHeading = heading;
-			airport.HelipadRadius = AirportEntry.DefaultHelipadRadius;
+			if (TryNumber(RadiusField.Match(body).Groups[1].Value, out var radius) && radius > 0)
+				airport.HelipadRadius = radius;
 		}
 
 		foreach (Match parking in parkingMatches)

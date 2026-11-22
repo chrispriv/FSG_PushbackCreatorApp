@@ -134,12 +134,13 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		var isHeliport = _airport.Kind == AirportKind.Heliport;
 		HeliportObjectsSection.IsVisible = isHeliport;
 		NameCaptionLabel.Text = _airport.Kind == AirportKind.Heliport
-			? "Heliport name (shown in map)"
+			? "Optional"
 			: "Airport name (shown in map)";
 		IcaoEntry.Text = _airport.Icao4;
 		UpdateTmeCodeLabel();
 		NameEntry.Text = _airport.Name;
 		HelipadPositionEntry.Text = GeoCoordinateParser.Format(_airport.HelipadLatitude, _airport.HelipadLongitude);
+		HelipadRadiusEntry.Text = _airport.EffectiveHelipadRadius.ToString("0.###", CultureInfo.InvariantCulture);
 		HelipadHeadingEntry.Text = _airport.HelipadHeading.ToString("0.###", CultureInfo.InvariantCulture);
 		var isPushback = _airport.Kind != AirportKind.Heliport;
 		TowerPositionEntry.Text = GeoCoordinateParser.Format(_airport.TowerLatitude, _airport.TowerLongitude);
@@ -148,6 +149,12 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			? string.Empty
 			: GeoCoordinateParser.Format(_airport.WindsockLatitude, _airport.WindsockLongitude);
 		DummyHelipadCheck.IsChecked = !isPushback && _airport.DummyHelipadEnabled;
+		WindsockDirectionEntry.Text = isPushback
+			? "0"
+			: _airport.WindsockDirection.ToString("0.###", CultureInfo.InvariantCulture);
+		WindsockScaleEntry.Text = isPushback
+			? "1"
+			: _airport.EffectiveWindsockScale.ToString("0.###", CultureInfo.InvariantCulture);
 		WindsockHeightEntry.Text = isPushback
 			? "0"
 			: _airport.WindsockHeightOffset.ToString("0.###", CultureInfo.InvariantCulture);
@@ -453,6 +460,11 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			_airport.HelipadHeading = heading;
 			HelipadHeadingEntry.Text = heading.ToString("0.###", CultureInfo.InvariantCulture);
 		}
+		else if (target == MapSceneBuilder.WindsockId)
+		{
+			_airport.WindsockDirection = TocWriter.HeadingToXrefDirection(heading);
+			WindsockDirectionEntry.Text = _airport.WindsockDirection.ToString("0.###", CultureInfo.InvariantCulture);
+		}
 		else if (MapSceneBuilder.TryParseParkingId(target, out var parkingId))
 		{
 			var slot = _airport.ParkingSlots.FirstOrDefault(s => s.Id == parkingId);
@@ -579,6 +591,9 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			_airport.HelipadLongitude = hLon;
 		}
 
+		if (TryParseDouble(HelipadRadiusEntry.Text, out var radius) && radius > 0)
+			_airport.HelipadRadius = radius;
+
 		if (TryParseDouble(HelipadHeadingEntry.Text, out var heading))
 			_airport.HelipadHeading = heading;
 
@@ -603,6 +618,11 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			_airport.WindsockLatitude = wLat;
 			_airport.WindsockLongitude = wLon;
 		}
+
+		if (TryParseDouble(WindsockDirectionEntry.Text, out var windsockDirection))
+			_airport.WindsockDirection = windsockDirection;
+		if (TryParseDouble(WindsockScaleEntry.Text, out var windsockScale) && windsockScale > 0)
+			_airport.WindsockScale = windsockScale;
 
 		ApplyLooseParking();
 	}
@@ -662,6 +682,12 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		}
 
 		HelipadPositionEntry.Text = GeoCoordinateParser.Format(lat, lon);
+
+		if (!TryParseDouble(HelipadRadiusEntry.Text, out var helipadRadius) || helipadRadius <= 0)
+		{
+			error = "Helipad radius must be greater than 0.";
+			return false;
+		}
 
 		if (!TryParseDouble(HelipadHeadingEntry.Text, out var heading))
 		{
@@ -740,6 +766,8 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		double? windsockLat = null;
 		double? windsockLon = null;
 		var dummyHelipad = false;
+		var windsockDirection = 0d;
+		var windsockScale = AirportEntry.DefaultWindsockScale;
 		var windsockOffset = 0d;
 		var helipadOffset = 0d;
 		if (_airport.Kind == AirportKind.Heliport)
@@ -751,6 +779,16 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 				    out windsockLon,
 				    out error))
 				return false;
+			if (!TryParseOptionalOffset(WindsockDirectionEntry.Text, "Windsock direction must be a number (0 = east).", out windsockDirection, out error))
+				return false;
+			if (string.IsNullOrWhiteSpace(WindsockScaleEntry.Text))
+				windsockScale = AirportEntry.DefaultWindsockScale;
+			else if (!TryParseDouble(WindsockScaleEntry.Text, out windsockScale) || windsockScale <= 0)
+			{
+				error = "Windsock scale factor must be greater than 0.";
+				return false;
+			}
+
 			if (!TryParseOptionalOffset(WindsockHeightEntry.Text, "Windsock height offset must be a number (0 = default).", out windsockOffset, out error))
 				return false;
 			dummyHelipad = DummyHelipadCheck.IsChecked;
@@ -761,7 +799,7 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		_airport.Name = ProjectValidator.ClampSname(NameEntry.Text);
 		_airport.HelipadLatitude = lat;
 		_airport.HelipadLongitude = lon;
-		_airport.HelipadRadius = AirportEntry.DefaultHelipadRadius;
+		_airport.HelipadRadius = helipadRadius;
 		_airport.HelipadHeading = heading;
 		_airport.TowerLatitude = towerLat;
 		_airport.TowerLongitude = towerLon;
@@ -769,6 +807,8 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		_airport.WindsockLatitude = windsockLat;
 		_airport.WindsockLongitude = windsockLon;
 		_airport.DummyHelipadEnabled = dummyHelipad;
+		_airport.WindsockDirection = WadCoordinateConverter.NormalizeHeading(windsockDirection);
+		_airport.WindsockScale = windsockScale;
 		_airport.WindsockHeightOffset = windsockOffset;
 		_airport.HelipadHeightOffset = helipadOffset;
 		UpdateTmeCodeLabel();
@@ -827,10 +867,13 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			       IcaoEntry.Text,
 			       NameEntry.Text,
 			       HelipadPositionEntry.Text,
+			       HelipadRadiusEntry.Text,
 			       HelipadHeadingEntry.Text,
 			       TowerPositionEntry.Text,
 			       TowerHeightEntry.Text,
 			       WindsockPositionEntry.Text,
+			       WindsockDirectionEntry.Text,
+			       WindsockScaleEntry.Text,
 			       WindsockHeightEntry.Text,
 			       DummyHelipadCheck.IsChecked,
 			       HelipadHeightOffsetEntry.Text) ||
@@ -1022,12 +1065,15 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		string Name,
 		double? HelipadLatitude,
 		double? HelipadLongitude,
+		double HelipadRadius,
 		double HelipadHeading,
 		double? TowerLatitude,
 		double? TowerLongitude,
 		double TowerHeightAgl,
 		double? WindsockLatitude,
 		double? WindsockLongitude,
+		double WindsockDirection,
+		double WindsockScale,
 		double WindsockHeightOffset,
 		bool DummyHelipadEnabled,
 		double HelipadHeightOffset,
@@ -1038,12 +1084,15 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			airport.Name,
 			airport.HelipadLatitude,
 			airport.HelipadLongitude,
+			airport.HelipadRadius,
 			airport.HelipadHeading,
 			airport.TowerLatitude,
 			airport.TowerLongitude,
 			airport.TowerHeightAgl,
 			airport.WindsockLatitude,
 			airport.WindsockLongitude,
+			airport.WindsockDirection,
+			airport.WindsockScale,
 			airport.WindsockHeightOffset,
 			airport.DummyHelipadEnabled,
 			airport.HelipadHeightOffset,
@@ -1055,13 +1104,15 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			airport.Name = Name;
 			airport.HelipadLatitude = HelipadLatitude;
 			airport.HelipadLongitude = HelipadLongitude;
-			airport.HelipadRadius = AirportEntry.DefaultHelipadRadius;
+			airport.HelipadRadius = HelipadRadius;
 			airport.HelipadHeading = HelipadHeading;
 			airport.TowerLatitude = TowerLatitude;
 			airport.TowerLongitude = TowerLongitude;
 			airport.TowerHeightAgl = TowerHeightAgl;
 			airport.WindsockLatitude = WindsockLatitude;
 			airport.WindsockLongitude = WindsockLongitude;
+			airport.WindsockDirection = WindsockDirection;
+			airport.WindsockScale = WindsockScale;
 			airport.WindsockHeightOffset = WindsockHeightOffset;
 			airport.DummyHelipadEnabled = DummyHelipadEnabled;
 			airport.HelipadHeightOffset = HelipadHeightOffset;
@@ -1073,12 +1124,15 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			Name == airport.Name &&
 			HelipadLatitude == airport.HelipadLatitude &&
 			HelipadLongitude == airport.HelipadLongitude &&
+			HelipadRadius == airport.HelipadRadius &&
 			HelipadHeading == airport.HelipadHeading &&
 			TowerLatitude == airport.TowerLatitude &&
 			TowerLongitude == airport.TowerLongitude &&
 			TowerHeightAgl == airport.TowerHeightAgl &&
 			WindsockLatitude == airport.WindsockLatitude &&
 			WindsockLongitude == airport.WindsockLongitude &&
+			WindsockDirection == airport.WindsockDirection &&
+			WindsockScale == airport.WindsockScale &&
 			WindsockHeightOffset == airport.WindsockHeightOffset &&
 			DummyHelipadEnabled == airport.DummyHelipadEnabled &&
 			HelipadHeightOffset == airport.HelipadHeightOffset;
@@ -1088,9 +1142,9 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			Parking.Zip(airport.ParkingSlots, (snap, slot) => snap.Matches(slot)).All(x => x);
 
 		public bool MatchesForm(
-			string? icao, string? name, string? position, string? headingText,
+			string? icao, string? name, string? position, string? radiusText, string? headingText,
 			string? towerPosition, string? towerHeightText,
-			string? windsockPosition, string? windsockHeightText,
+			string? windsockPosition, string? windsockDirectionText, string? windsockScaleText, string? windsockHeightText,
 			bool dummyHelipadChecked, string? helipadHeightText)
 		{
 			var icaoNorm = (icao ?? string.Empty).Trim().ToUpperInvariant();
@@ -1104,11 +1158,17 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 				return false;
 			if (!SameOptionalPosition(windsockPosition, WindsockLatitude, WindsockLongitude))
 				return false;
+			if (!SameOptionalNumber(windsockDirectionText, WindsockDirection))
+				return false;
+			if (!SameOptionalNumber(windsockScaleText, WindsockScale))
+				return false;
 			if (!SameOptionalNumber(windsockHeightText, WindsockHeightOffset))
 				return false;
 			if (dummyHelipadChecked != DummyHelipadEnabled)
 				return false;
 			if (!SameOptionalNumber(helipadHeightText, HelipadHeightOffset))
+				return false;
+			if (!SameOptionalNumber(radiusText, HelipadRadius))
 				return false;
 
 			if (!double.TryParse(headingText, NumberStyles.Float, CultureInfo.InvariantCulture, out var heading) &&

@@ -24,9 +24,9 @@ Aerofly already has parking at many airports. This app writes **additional** dum
 - **Pushback slots** next to an existing FSG/FS4 airport (folder/file names `ICAO` + `00`, for example `EPWA00`)
 - **Standalone heliports** with a 4-character code (official ICAO or a private code such as `CH99`)
 
-Each place needs a **helipad** (radius is always **20** in the files). Without that helipad, FSG will not show the extra parking.
+Each place needs a **helipad** (radius is editable, default **20** in TSC/WAD). Without that helipad, FSG will not show the extra parking.
 
-You enter positions as **decimal** (preferred) or DMS. Set Google Earth **Settings** to **decimal** before copying coordinates; DMS from Earth is rounded and the positions will be inaccurate. The app stores decimal coordinates and writes Aerofly `.tsc` / `.wad` files. A helipad is currently required so extra pushback parking appears in Aerofly.
+You enter positions as **decimal** only (`lat, lon` or `lat lon`). **Export KML** is the usual Google Earth round-trip. You can still paste decimal coordinates from Earth if you set Google Earth **Settings** to decimal. The app writes Aerofly `.tsc` / `.wad` files. A helipad is currently required so extra pushback parking appears in Aerofly.
 
 ## Download
 
@@ -41,7 +41,7 @@ Windows (portable) and Android (APK) builds are on **[Releases](https://github.c
 1. **New project**, or **Open TME / Open ZIP** to continue a package.
 2. Set the **project package name** (folder inside the TME/ZIP, default `pca_scenery_pushback`).
 3. **New airport** → pushback airport or heliport → 4-character ICAO, optional map name, helipad position and heading.
-4. On the airport screen, use the **map** to place the helipad and other objects. If there are no coordinates yet, **Find location (OpenStreetMap)** jumps the map; then tap to place. You can still paste decimal coordinates. In Google Earth **Settings**, switch to **decimal** if you paste from Earth.
+4. On the airport screen, use the **map** to place the helipad and other objects. If there are no coordinates yet, **Find location (OpenStreetMap)** jumps the map; then tap to place. You can still paste decimal coordinates. **Export KML** reviews the project in Google Earth.
 5. For pushback airports: **New parking slot**, select it, tap the map. The rectangle is the stand size; the arrow is heading (0 = north).
 6. **Export TME** for FSG and/or **Export ZIP (FS4)** for the PC. **Export KML** is optional, to review or move points in Google Earth.
 7. Copy the TME into FSG extra content, or unpack the FS4 zip into `addons\scenery`. Details: [GUIDE.md](GUIDE.md).
@@ -119,15 +119,15 @@ These details matter if you compare files with other Aerofly tools.
 
 - Dummy pushback **folders and file names** stay `{icao}00`. TSC/WAD **`[icao]`** is the four-character code plus **two spaces** (for example `[EPWA  ]`) so Aerofly labels the place as `EPWA`. Heliports stay four characters.
 - Optional **`[sname]`** (max 32). Empty input uses the TME code. Heliports also write **`[lname]`** with the same name.
-- Pushback airports and heliports may set optional **`[tower_position]`** in both **TSC** (lon/lat) and **WAD** (world units, same conversion as other positions). Tower height AGL **0** skips the dummy `.toc`. Any other height writes the airport `.toc` (`container`, scale `0.0001`) next to the `.tsc`/`.wad` and a `cultivation_files` link with **`[auto_height][true]`** and **`[use_height_offset][true]`**. Place-level **`[autoheight][true]`** is always written. Tower coordinates must not match the helipad or a parking slot. On the map the tower is a point only (no heading or rectangle), so a later XREF tower can use a real footprint. **Export KML** includes a **Tower** pin when a tower position is set. Open still accepts a legacy `landrider01` dummy.
-- Heliports may add optional **windsock** (`airport_windsock_large1`) and **helipad** (`airportmast03`, scale **2.5**, base height **−60.5 m** at the helipad lon/lat). Each has a height offset (± m from 0) for autoheight. XREF `[direction]` uses the WAD heading wrap in degrees (0 = heading 90° east).
+- Pushback airports and heliports may set optional **`[tower_position]`** in TSC/WAD. Tower height AGL **0** skips the dummy. Any other height writes a **POI** cultivation (`container`, scale `0.0001`) with terrain autoheight, not an airport-folder `.toc`. Place-level **`[autoheight][true]`** is always written on the TSC. Tower coordinates must not match the helipad or a parking slot. On the map the tower is a point only. **Export KML** includes a **Tower** pin when a tower position is set. Open still accepts a legacy `landrider01` dummy and a legacy airport `.toc`.
+- Heliports may add optional **windsock** (`airport_windsock_large1`), **helipad object** (`airportmast03`, scale **2.5**, base height **−60.5 m**), and a tower dummy. All of these XREFs (and the pushback tower dummy) export as a **POI** under `scenery/poi/{grid}_pca_{code}/` (TME) or `{package}/poi/…` (FS4 ZIP): `.tsl` with buried `pct_anchor.tmb` / `pct_anchor.ttx` (the ttx name is fixed inside the tmb) and a `.toc`. Airport TSC has no `cultivation_files` link. Windsock has its own XREF **direction** (0 = east) and **scale factor** (default 1). Helipad **radius** is still in TSC/WAD (default 20).
 - **Open / Add TME or ZIP:** ICAO from the airport folder or `.tsc` file name (first four characters). Kind is **pushback** if any parking block has `[tags][pushback]`; otherwise **heliport**. The next export always uses this app’s layout. `.wad` is regenerated.
 - **Add TME / Add ZIP** merges airports into the current project; duplicate TME codes are skipped. Package name stays as it is.
 - **Sort A–Z** on the airport list orders airports by ICAO (TME code). Open TME/ZIP keeps archive order; new or merged airports stay at the end until you sort.
 - **Sort A–Z** on a pushback airport orders parking slots by name. New slots stay at the end until you sort again.
 - **Export KML** does not count as “project exported”; **Quit project** still warns until you export TME or ZIP.
 - On Android, export writes to **Downloads** and **replaces** a file with the same name (no `name (1).tme` from the project package name).
-- On **Mac** (and iOS), export opens a folder picker (same security-scoped bookmark pattern as TgiModelTransformer). Choose Documents or Downloads; the TME/ZIP/KML is written there.
+- On **Windows** and **Mac** (and iOS), export opens a **folder** picker. Choose Downloads or Documents; the TME/ZIP/KML is written as `{package}{extension}`. If that file already exists, Windows asks before replacing. Mac uses a security-scoped bookmark (same approach as TgiModelTransformer).
 - WAD conversion (CalcES RAD, west/south negative):
   - Longitude: `65536 × (0.5 + 0.5 × lon / 180)`
   - Latitude: `65536 × (0.5 + 0.5 × (tan(2.3311223704144 × lat / 180) / 2.3311223704144))` with `tan` in radians

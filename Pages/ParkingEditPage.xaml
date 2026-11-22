@@ -12,7 +12,7 @@
 
         <ScrollView Grid.Row="0">
             <VerticalStackLayout Spacing="8">
-                <Label Text="Parking position (Google Earth decimal for better results)" Style="{StaticResource FieldCaption}" />
+                <Label Text="Parking position (decimal lat, lon)" Style="{StaticResource FieldCaption}" />
                 <Entry x:Name="PositionEntry"
                        Placeholder="40.4675, 50.0539"
                        Keyboard="Text" />

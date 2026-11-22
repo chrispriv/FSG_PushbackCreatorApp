@@ -20,7 +20,8 @@ public static class TmeArchiveReader
 		var skipped = 0;
 		string? package = null;
 
-		var tocByStem = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		var airportTocByStem = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		var poiTocByStem = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
 		foreach (var entry in zip.Entries)
 		{
@@ -46,7 +47,11 @@ public static class TmeArchiveReader
 			var text = reader.ReadToEnd();
 			if (isToc)
 			{
-				tocByStem[Path.GetFileNameWithoutExtension(path)] = text;
+				var stem = Path.GetFileNameWithoutExtension(path);
+				if (PoiWriter.IsPoiTocPath(path))
+					poiTocByStem[stem] = text;
+				else
+					airportTocByStem[stem] = text;
 				continue;
 			}
 
@@ -69,8 +74,10 @@ public static class TmeArchiveReader
 
 		foreach (var airport in project.Airports)
 		{
-			if (tocByStem.TryGetValue(airport.FolderName, out var toc))
-				TocParser.Apply(airport, toc);
+			if (airportTocByStem.TryGetValue(airport.FolderName, out var airportToc))
+				TocParser.Apply(airport, airportToc);
+			if (poiTocByStem.TryGetValue(airport.FolderName, out var poiToc))
+				TocParser.Apply(airport, poiToc);
 		}
 
 		return new TmeImportResult
