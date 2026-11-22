@@ -66,8 +66,9 @@
 
 		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
-		<EmbeddedResource Include="Resources\Raw\poi\pct_anchor.tmb" LogicalName="poi.pct_anchor.tmb" />
-		<EmbeddedResource Include="Resources\Raw\poi\pct_anchor.ttx" LogicalName="poi.pct_anchor.ttx" />
+		<EmbeddedResource Include="Resources\Raw\poi\pca_anchor.tmb" LogicalName="poi.pca_anchor.tmb" />
+		<EmbeddedResource Include="Resources\Raw\poi\pca_anchor_dxt1.ttx" LogicalName="poi.pca_anchor_dxt1.ttx" />
+		<EmbeddedResource Include="Resources\Raw\poi\pca_anchor_etc2.ttx" LogicalName="poi.pca_anchor_etc2.ttx" />
 	</ItemGroup>
 
 	<ItemGroup>

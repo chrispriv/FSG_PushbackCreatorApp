@@ -43,7 +43,7 @@ public static class TmeStoreArchive
 
 			var poiFolder = PoiWriter.FolderName(airport);
 			zip.AddDirectory($"{poiRoot}/{poiFolder}/");
-			foreach (var (relativePath, data) in PoiWriter.Files(airport))
+			foreach (var (relativePath, data) in PoiWriter.Files(airport, etc2Texture: true))
 				zip.AddFile($"{poiRoot}/{relativePath}", data);
 		}
 

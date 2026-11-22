@@ -12,9 +12,10 @@ namespace FSG_PushbackCreator.Services;
 public static class PoiWriter
 {
 	public const string NameMarker = "pca_";
-	public const string AnchorGeometry = "pct_anchor";
-	const string AnchorResourceTmb = "poi.pct_anchor.tmb";
-	const string AnchorResourceTtx = "poi.pct_anchor.ttx";
+	public const string AnchorGeometry = "pca_anchor";
+	const string AnchorResourceTmb = "poi.pca_anchor.tmb";
+	const string AnchorResourceTtxDxt1 = "poi.pca_anchor_dxt1.ttx";
+	const string AnchorResourceTtxEtc2 = "poi.pca_anchor_etc2.ttx";
 
 	public static bool ShouldWrite(AirportEntry airport) => airport.WritesToc;
 
@@ -35,19 +36,24 @@ public static class PoiWriter
 		return string.Create(CultureInfo.InvariantCulture, $"{lonHem}{lonCenti:00000}{latHem}{latCenti:0000}");
 	}
 
-	public static IReadOnlyList<(string RelativePath, byte[] Data)> Files(AirportEntry airport)
+	/// <param name="etc2Texture">
+	/// True for FSG TME (ETC2, OpenGL/Vulkan). False for FS4 ZIP (DXT1, PC/Mac).
+	/// The ttx is always written as pca_anchor.ttx; the tmb texture name matches that file.
+	/// </param>
+	public static IReadOnlyList<(string RelativePath, byte[] Data)> Files(AirportEntry airport, bool etc2Texture)
 	{
 		if (!ShouldWrite(airport))
 			throw new InvalidOperationException($"{airport.TmeCode} does not need a POI.");
 
 		var folder = FolderName(airport);
 		var stem = airport.FolderName;
+		var ttx = etc2Texture ? AnchorResourceTtxEtc2 : AnchorResourceTtxDxt1;
 		return
 		[
 			($"{folder}/{stem}.toc", Encoding.UTF8.GetBytes(TocWriter.Write(airport))),
 			($"{folder}/{stem}.tsl", Encoding.UTF8.GetBytes(WriteTsl(airport, stem))),
 			($"{folder}/{AnchorGeometry}.tmb", LoadResource(AnchorResourceTmb)),
-			($"{folder}/{AnchorGeometry}.ttx", LoadResource(AnchorResourceTtx))
+			($"{folder}/{AnchorGeometry}.ttx", LoadResource(ttx))
 		];
 	}
 

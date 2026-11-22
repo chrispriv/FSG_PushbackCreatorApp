@@ -201,7 +201,7 @@ public partial class AirportListPage : ContentPage, IShellBackHandler
 
 	async void OnExportTme(object? sender, EventArgs e) =>
 		await ExportAsync(
-			"Export TME",
+			"Export TME (FSG)",
 			"FSG TME",
 			".tme",
 			package => TmeStoreArchive.Build(ProjectSession.Current, package),

@@ -48,7 +48,7 @@ public static class Fs4ZipArchive
 
 				var poiFolder = PoiWriter.FolderName(airport);
 				AddDirectory(zip, $"{poiRoot}/{poiFolder}/");
-				foreach (var (relativePath, data) in PoiWriter.Files(airport))
+				foreach (var (relativePath, data) in PoiWriter.Files(airport, etc2Texture: false))
 					AddFile(zip, $"{poiRoot}/{relativePath}", data);
 			}
 		}

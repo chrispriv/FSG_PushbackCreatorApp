@@ -24,7 +24,7 @@ This is the second screen.
 4. **Edit** / **Delete** — change or remove one airport.
 5. **Sort A–Z** — order the list by ICAO (TME code). Open, add, and new airports keep their current order until you press this.
 6. Export:
-   - **Export TME** — FSG
+   - **Export TME (FSG)** — FSG
    - **Export ZIP (FS4)** — PC
    - **Export KML** — Google Earth (`{package}.kml`); does not replace a TME/ZIP export
 7. **Quit project** — leave the project. If you changed something and did not export TME or ZIP, the app asks before closing.
@@ -100,7 +100,7 @@ For each pushback stand:
 
    `Documents\Aerofly FS 4\addons\scenery\`
 
-   so `{package}\airports\{code}\` appears under `addons\scenery`. XREF objects (heliport windsock / dummy helipad / tower dummy, and pushback tower dummy) are in `{package}\poi\{e#####n####}_pca_{code}\` with a buried `pct_anchor.tmb` / `pct_anchor.ttx` so autoheight can use terrain. Without those objects there is no `poi` folder.
+   so `{package}\airports\{code}\` appears under `addons\scenery`. XREF objects (heliport windsock / dummy helipad / tower dummy, and pushback tower dummy) are in `{package}\poi\{e#####n####}_pca_{code}\` with a buried `pca_anchor.tmb` / `pca_anchor.ttx` (ETC2 in the TME, DXT1 in the FS4 ZIP) so autoheight can use terrain. Without those objects there is no `poi` folder.
 3. Restart FS4.
 
 **One airport mod per ICAO:** Aerofly loads only **one** extra airport package for a given ICAO code at a time (for example one `EPWA00`). A second TME or scenery folder for the same airport is ignored and does not appear. Keep a single package for that ICAO, or merge airports into one project with **Add TME / Add ZIP** and export once.

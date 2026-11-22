@@ -63,7 +63,7 @@
             </VerticalStackLayout>
 
             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8" Padding="0,8,0,0">
-                <Button Text="Export TME" Clicked="OnExportTme" />
+                <Button Text="Export TME (FSG)" Clicked="OnExportTme" />
                 <Button Grid.Column="1" Text="Export ZIP (FS4)" Clicked="OnExportZip" />
                 <Button Grid.Column="2" Text="Export KML" Clicked="OnExportKml" />
             </Grid>
