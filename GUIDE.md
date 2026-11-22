@@ -8,7 +8,7 @@ On the home screen:
 
 | Button | Meaning |
 | --- | --- |
-| **New** | Empty project. Suggested package name: `pca_scenery_pushback`. |
+| **New project** | Empty project. Suggested package name: `pca_scenery_pushback`. |
 | **Open TME (FSG)** | Load an existing FSG `.tme` (including packages this app did not create). |
 | **Open ZIP (FS4)** | Load an FS4 scenery zip (`package\airports\…`). |
 
@@ -19,7 +19,7 @@ On Android, **Open** uses the system file picker. On Windows, use the file dialo
 This is the second screen.
 
 1. Set **Project package name** — this becomes the first folder inside the TME/ZIP. Use letters, digits, and underscores; keep it stable if you already copied files into the sim.
-2. **New** — choose **Pushback airport (ICAO + 00)** or **Heliport (4-character code)**.
+2. **New airport** — choose **Pushback airport (ICAO + 00)** or **Heliport (4-character code)**.
 3. **Add TME (FSG)** / **Add ZIP (FS4)** — merge more airports into **this** project. Airports with a TME code that is already in the list are skipped. The package name is not replaced.
 4. **Edit** / **Delete** — change or remove one airport.
 5. **Sort A–Z** — order the list by ICAO (TME code). Open, add, and new airports keep their current order until you press this.
@@ -39,8 +39,8 @@ This is the second screen.
 | Name `[sname]` | Optional map title (max 32). Empty → TME code (`ICAO00`). | Optional. Shown on the Location map above the ICAO. Empty → the 4-character code. |
 | Helipad position | Required. Also used as the dummy airport position. | Required. |
 | Helipad heading | Degrees, default 0. | Same. |
-| Tower position shift | Optional. Must not match the helipad or a parking slot (no overlay). Empty = no shift. | Not used. |
-| Tower height AGL | Optional. **0** = default (no extra `.toc`). Any other height writes `{icao}00.toc` and links it from the `.tsc`. | Not used. |
+| Tower position shift | Optional. Must not match the helipad or a parking slot (no overlay). Empty = no shift. | Optional, same rules (must not match the helipad). |
+| Tower height AGL | Optional. **0** = default (no extra `.toc`). Any other height writes `{icao}00.toc` and links it from the `.tsc`. | Optional, same (writes `{icao}.toc` when height is not 0). |
 | Windsock | Not used. | Optional position. Empty = none. Height offset m relative to 0 (autoheight). |
 | Helipad | Not used. | Optional checkbox. Same lon/lat as the helipad position. Height offset m is added to **−60.5 m**. |
 | Parking slots | Add at least one pushback slot for a useful package. **Sort A–Z** orders by name. | Not used. |
@@ -53,10 +53,10 @@ The airport screen is a **map workspace** (same split as TGI Model Transformer: 
 
 1. If the airport has **no coordinates yet**, **Find location (OpenStreetMap)** is shown: search for the airport name or ICAO, pick a result to jump the map, then **tap the map** to place the **helipad** (airport location). After that the search panel hides.
 2. Other objects (tower, windsock, pushback slots, later XREF) are available only after the helipad is set.
-3. **Drag** the footprint or the round handle to move. Drag the **diamond** at the arrow tip to set **heading** (0 = north, clockwise). Helipad and parking headings are written back to the inspector.
+3. **Drag** the footprint or the round handle to move. Drag the **diamond** at the arrow tip to set **heading** (0 = north, clockwise). Helipad and parking headings are written back to the inspector. Selecting an object in the **list** pans the map to it; selecting it **on the map** keeps the current view.
 4. Helipad overlay is a **20 m circle**. Pushback overlays are **rectangles** from parking size. You can still paste decimal coordinates into the inspector fields.
 
-Imagery tiles are **Esri World Imagery** (XYZ, no app API key). Switch the layer control to **Streets** (OpenStreetMap) if you need labels. An internet connection is required for tiles and OSM search.
+Imagery tiles are **Esri World Imagery** (XYZ, no app API key). Switch the layer control to **Streets** (OpenStreetMap) if you need labels. Zoom with the map **+ / −** or **pinch** (two fingers) on a phone or a touch PC. An internet connection is required for tiles and OSM search.
 
 Google Earth is optional for a second check or KML:
 

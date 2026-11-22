@@ -25,7 +25,7 @@ public static class TscWriter
 		Line(sb, $"        <[string8u][icao][{icaoField}]>");
 		Line(sb, "        <[string8u][coordinate_system][flat]>");
 		Line(sb, $"        <[vector2_float64][position][{FormatLonLat(lon, lat)}]>");
-		if (airport.Kind != AirportKind.Heliport && airport.HasTowerPosition)
+		if (airport.HasTowerPosition)
 			Line(sb, $"        <[vector2_float64][tower_position][{FormatLonLat(airport.TowerLongitude!.Value, airport.TowerLatitude!.Value)}]>");
 		Line(sb, "        <[bool][autoheight][true]>");
 		Line(sb, "");

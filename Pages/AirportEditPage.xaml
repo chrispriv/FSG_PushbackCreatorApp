@@ -4,6 +4,7 @@
              xmlns:services="clr-namespace:FSG_PushbackCreator.Services"
              x:Class="FSG_PushbackCreator.Pages.AirportEditPage"
              Title="Airport"
+             Shell.NavBarIsVisible="False"
              Padding="16"
              BackgroundColor="{StaticResource PageBackground}">
 
@@ -21,21 +22,27 @@
 
             <ScrollView>
                 <VerticalStackLayout Spacing="8" Padding="0,0,12,8">
-                    <Label x:Name="KindLabel" Style="{StaticResource SubHeadline}" LineBreakMode="NoWrap" />
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                        <Button Text="←"
+                                Style="{StaticResource QuietButton}"
+                                WidthRequest="36"
+                                Padding="0"
+                                Clicked="OnCancel" />
+                        <Label x:Name="KindLabel"
+                               Grid.Column="1"
+                               Style="{StaticResource SubHeadline}"
+                               LineBreakMode="NoWrap"
+                               VerticalOptions="Center" />
+                    </Grid>
 
                     <Grid x:Name="IdentityGrid"
                           ColumnDefinitions="*,1.25*"
                           ColumnSpacing="12">
                         <VerticalStackLayout x:Name="IcaoBlock" Spacing="0">
-                            <HorizontalStackLayout Spacing="8">
-                                <Label Text="ICAO (4 chars)"
-                                       Style="{StaticResource FieldCaption}"
-                                       LineBreakMode="NoWrap" />
-                                <Label x:Name="TmeCodeLabel"
-                                       Style="{StaticResource FieldCaption}"
-                                       LineBreakMode="NoWrap"
-                                       VerticalOptions="Center" />
-                            </HorizontalStackLayout>
+                            <Label x:Name="IcaoCaptionLabel"
+                                   Text="ICAO (4 chars)"
+                                   Style="{StaticResource FieldCaption}"
+                                   LineBreakMode="NoWrap" />
                             <Entry x:Name="IcaoEntry"
                                    MaxLength="4"
                                    Placeholder="e.g. UBBN or CH99"
@@ -212,34 +219,15 @@
             </Grid>
         </Grid>
 
-        <Grid x:Name="MapPanel" Grid.Column="1" RowSpacing="8">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Border Stroke="#333333" StrokeThickness="1" BackgroundColor="{StaticResource PageBackground}">
-                <HybridWebView x:Name="MapView"
-                               HybridRoot="wwwroot"
-                               DefaultFile="index.html"
-                               RawMessageReceived="OnMapMessage" />
-            </Border>
-            <Grid Grid.Row="1" ColumnSpacing="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Label x:Name="MapHintLabel"
-                       Text="Place the helipad first. Then drag a footprint to move it, or drag the diamond on the arrow to set heading (0 = north)."
-                       FontSize="12"
-                       TextColor="{StaticResource TextDim}"
-                       VerticalOptions="Center"
-                       LineBreakMode="WordWrap" />
-                <HorizontalStackLayout Grid.Column="1" Spacing="8">
-                    <Button Text="Zoom −" Style="{StaticResource QuietButton}" Clicked="OnZoomOut" />
-                    <Button Text="Zoom +" Style="{StaticResource QuietButton}" Clicked="OnZoomIn" />
-                    <Button Text="Fit" Style="{StaticResource QuietButton}" Clicked="OnFitMap" />
-                </HorizontalStackLayout>
-            </Grid>
-        </Grid>
+        <Border x:Name="MapPanel"
+                Grid.Column="1"
+                Stroke="#333333"
+                StrokeThickness="1"
+                BackgroundColor="{StaticResource PageBackground}">
+            <HybridWebView x:Name="MapView"
+                           HybridRoot="wwwroot"
+                           DefaultFile="index.html"
+                           RawMessageReceived="OnMapMessage" />
+        </Border>
     </Grid>
 </ContentPage>

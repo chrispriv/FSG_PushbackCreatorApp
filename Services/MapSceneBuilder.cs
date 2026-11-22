@@ -50,20 +50,17 @@ public static class MapSceneBuilder
 		if (!scene.AirportLocated)
 			return scene;
 
+		scene.Items.Add(new MapItem
+		{
+			Id = TowerId,
+			Kind = "tower",
+			Label = "Tower",
+			Lat = airport.TowerLatitude,
+			Lon = airport.TowerLongitude
+		});
+
 		if (airport.Kind != AirportKind.Heliport)
 		{
-			scene.Items.Add(new MapItem
-			{
-				Id = TowerId,
-				Kind = "tower",
-				Label = "Tower",
-				Lat = airport.TowerLatitude,
-				Lon = airport.TowerLongitude,
-				Heading = airport.HelipadHeading,
-				LengthM = 8,
-				WidthM = 8
-			});
-
 			foreach (var slot in airport.ParkingSlots)
 			{
 				scene.Items.Add(new MapItem
@@ -114,6 +111,7 @@ public sealed class MapViewState
 	public double Lat { get; set; }
 	public double Lon { get; set; }
 	public int Zoom { get; set; } = 16;
+	public bool PanOnly { get; set; }
 }
 
 public sealed class MapItem

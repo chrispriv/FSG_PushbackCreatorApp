@@ -72,8 +72,7 @@ public static class KmlWriter
 				airport.WindsockLatitude!.Value));
 		}
 
-		if (airport.Kind != AirportKind.Heliport &&
-		    airport.TowerLatitude is { } tlat &&
+		if (airport.TowerLatitude is { } tlat &&
 		    airport.TowerLongitude is { } tlon)
 		{
 			var heightNote = airport.TowerHeightAgl == 0

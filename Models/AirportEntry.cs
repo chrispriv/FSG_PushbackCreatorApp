@@ -138,8 +138,7 @@ public sealed class AirportEntry : ObservableEntity
 
 	public bool HasTowerPosition => TowerLatitude is not null && TowerLongitude is not null;
 
-	public bool WritesTowerDummy =>
-		Kind != AirportKind.Heliport && TowerHeightAgl != 0;
+	public bool WritesTowerDummy => HasTowerPosition && TowerHeightAgl != 0;
 
 	public double? WindsockLatitude
 	{
@@ -215,7 +214,7 @@ public sealed class AirportEntry : ObservableEntity
 			var line = Kind == AirportKind.Heliport
 				? $"{TmeCode}  ·  {title}"
 				: $"{TmeCode}  ·  {title}  ·  {ParkingSlots.Count} pushback slot(s)";
-			if (Kind != AirportKind.Heliport && HasTowerPosition && TowerHeightAgl != 0)
+			if (HasTowerPosition && TowerHeightAgl != 0)
 			{
 				var height = TowerHeightAgl.ToString("0.###", CultureInfo.InvariantCulture);
 				line += $"  ·  Tower shift ({height}m)";

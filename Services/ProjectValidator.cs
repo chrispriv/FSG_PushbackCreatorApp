@@ -37,9 +37,6 @@ public static class ProjectValidator
 		double helipadLongitude,
 		ParkingSlot? ignoreSlot = null)
 	{
-		if (airport.Kind == AirportKind.Heliport)
-			return null;
-
 		var hasTower = towerLatitude is not null && towerLongitude is not null;
 		if (!hasTower)
 		{
@@ -71,7 +68,7 @@ public static class ProjectValidator
 
 	public static string? ParkingMatchesTower(AirportEntry airport, double latitude, double longitude)
 	{
-		if (airport.Kind == AirportKind.Heliport || !airport.HasTowerPosition)
+		if (!airport.HasTowerPosition)
 			return null;
 		if (GeoCoordinateParser.SamePosition(
 			    latitude, longitude, airport.TowerLatitude!.Value, airport.TowerLongitude!.Value))

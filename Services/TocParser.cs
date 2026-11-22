@@ -26,8 +26,6 @@ public static class TocParser
 			var xrefName = name.Groups[1].Value;
 			if (IsTowerDummyXref(xrefName))
 			{
-				if (airport.Kind == AirportKind.Heliport)
-					continue;
 				if (!airport.HasTowerPosition)
 				{
 					airport.TowerLongitude = lon;

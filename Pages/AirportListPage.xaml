@@ -3,59 +3,66 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:FSG_PushbackCreator.Models"
              x:Class="FSG_PushbackCreator.Pages.AirportListPage"
-             Title="Airports">
+             Title="Project"
+             Shell.NavBarIsVisible="False"
+             Padding="16"
+             BackgroundColor="{StaticResource PageBackground}">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto"
-          Padding="16"
-          RowSpacing="12"
-          MaximumWidthRequest="1194"
-          HorizontalOptions="Center">
+    <ScrollView>
+        <VerticalStackLayout Spacing="10" MaximumWidthRequest="1194" HorizontalOptions="Center">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                <Button Text="←"
+                        Style="{StaticResource QuietButton}"
+                        WidthRequest="36"
+                        Padding="0"
+                        Clicked="OnCancel" />
+                <Label Grid.Column="1"
+                       Text="Project"
+                       Style="{StaticResource SubHeadline}"
+                       VerticalOptions="Center" />
+            </Grid>
 
-        <Label Grid.Row="0"
-               Text="Airports in this project. A dummy pushback airport needs a helipad or it will not show in FSG / FS4."
-               Style="{StaticResource SubHeadline}" />
-
-        <VerticalStackLayout Grid.Row="1" Spacing="4">
-            <Label Text="Project package name (folder inside the TME/ZIP)"
+            <Label Text="Dummy pushback airports need a helipad or they will not show in FSG / FS4."
                    Style="{StaticResource FieldCaption}" />
-            <Entry x:Name="PackageNameEntry"
-                   Placeholder="pca_scenery_pushback"
-                   MaxLength="64"
-                   Unfocused="OnPackageNameUnfocused" />
-        </VerticalStackLayout>
 
-        <Grid Grid.Row="2" ColumnDefinitions="*,*,*" ColumnSpacing="8">
-            <Button Text="New" Clicked="OnNewAirport" />
-            <Button Grid.Column="1" Text="Add TME (FSG)" Clicked="OnAddTme" />
-            <Button Grid.Column="2" Text="Add ZIP (FS4)" Clicked="OnAddZip" />
-        </Grid>
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Project package name (folder inside the TME/ZIP)"
+                       Style="{StaticResource FieldCaption}" />
+                <Entry x:Name="PackageNameEntry"
+                       Placeholder="pca_scenery_pushback"
+                       MaxLength="64"
+                       Unfocused="OnPackageNameUnfocused" />
+            </VerticalStackLayout>
 
-        <CollectionView x:Name="AirportList"
-                        Grid.Row="3"
-                        SelectionMode="None">
-            <CollectionView.EmptyView>
-                <Label Text="No airports yet. Use New, or Add TME / Add ZIP to merge airports from another package."
-                       Margin="0,24,0,0" />
-            </CollectionView.EmptyView>
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:AirportEntry">
-                    <VerticalStackLayout Padding="0,6" Spacing="4">
-                        <Label Text="{Binding ListSummary}" LineBreakMode="TailTruncation" />
-                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                            <Button Text="Edit" Clicked="OnEdit" CommandParameter="{Binding .}" />
-                            <Button Grid.Column="1"
-                                    Text="Delete"
-                                    Style="{StaticResource QuietButton}"
-                                    Clicked="OnDelete"
-                                    CommandParameter="{Binding .}" />
-                        </Grid>
-                    </VerticalStackLayout>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-
-        <VerticalStackLayout Grid.Row="4" Spacing="8" Padding="0,8,0,0">
             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <Button Text="New airport" Clicked="OnNewAirport" />
+                <Button Grid.Column="1" Text="Add TME (FSG)" Clicked="OnAddTme" />
+                <Button Grid.Column="2" Text="Add ZIP (FS4)" Clicked="OnAddZip" />
+            </Grid>
+
+            <Label x:Name="EmptyHintLabel"
+                   Text="No airports yet. Use New airport, or Add TME / Add ZIP to merge airports from another package."
+                   Margin="0,8,0,0" />
+
+            <VerticalStackLayout x:Name="AirportStack" Spacing="4">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:AirportEntry">
+                        <VerticalStackLayout Padding="0,6" Spacing="4">
+                            <Label Text="{Binding ListSummary}" LineBreakMode="TailTruncation" />
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                                <Button Text="Edit" Clicked="OnEdit" CommandParameter="{Binding .}" />
+                                <Button Grid.Column="1"
+                                        Text="Delete"
+                                        Style="{StaticResource QuietButton}"
+                                        Clicked="OnDelete"
+                                        CommandParameter="{Binding .}" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8" Padding="0,8,0,0">
                 <Button Text="Export TME" Clicked="OnExportTme" />
                 <Button Grid.Column="1" Text="Export ZIP (FS4)" Clicked="OnExportZip" />
                 <Button Grid.Column="2" Text="Export KML" Clicked="OnExportKml" />
@@ -68,5 +75,5 @@
                         Clicked="OnCancel" />
             </Grid>
         </VerticalStackLayout>
-    </Grid>
+    </ScrollView>
 </ContentPage>

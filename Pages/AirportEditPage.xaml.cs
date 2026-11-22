@@ -16,6 +16,7 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 	bool _suppressObjectSelection;
 	bool _searchBusy;
 	bool _highlightOnMap = true;
+	bool _ignoreListPan;
 	string _selectedId = MapSceneBuilder.HelipadId;
 	Guid? _selectedParkingId;
 
@@ -72,8 +73,8 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		else
 		{
 			MainGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-			MainGrid.RowDefinitions.Add(new RowDefinition(new GridLength(0.9, GridUnitType.Star)));
-			MainGrid.RowDefinitions.Add(new RowDefinition(new GridLength(1.1, GridUnitType.Star)));
+			MainGrid.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+			MainGrid.RowDefinitions.Add(new RowDefinition(GridLength.Star));
 			Grid.SetColumn(FormPanel, 0);
 			Grid.SetRow(FormPanel, 0);
 			Grid.SetColumnSpan(FormPanel, 1);
@@ -84,11 +85,7 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			Grid.SetRowSpan(MapPanel, 1);
 		}
 
-		var stackIdentity = !wide || Width < 520;
-		if (stackIdentity)
-			SetStacked(IdentityGrid, IcaoBlock, NameBlock);
-		else
-			SetTwoColumn(IdentityGrid, IcaoBlock, NameBlock, 1, 1.25);
+		SetTwoColumn(IdentityGrid, IcaoBlock, NameBlock, 1, 1.25);
 	}
 
 	static void SetStacked(Grid grid, View first, View second)
@@ -132,8 +129,8 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		_selectedId = MapSceneBuilder.HelipadId;
 		_selectedParkingId = null;
 		KindLabel.Text = _airport.Kind == AirportKind.Heliport
-			? "Heliport (4-character code)"
-			: "Dummy pushback airport (ICAO + 00)";
+			? "Heliport"
+			: "Pushback airport";
 		var isHeliport = _airport.Kind == AirportKind.Heliport;
 		HeliportObjectsSection.IsVisible = isHeliport;
 		NameCaptionLabel.Text = _airport.Kind == AirportKind.Heliport
@@ -145,12 +142,8 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		HelipadPositionEntry.Text = GeoCoordinateParser.Format(_airport.HelipadLatitude, _airport.HelipadLongitude);
 		HelipadHeadingEntry.Text = _airport.HelipadHeading.ToString("0.###", CultureInfo.InvariantCulture);
 		var isPushback = _airport.Kind != AirportKind.Heliport;
-		TowerPositionEntry.Text = isPushback
-			? GeoCoordinateParser.Format(_airport.TowerLatitude, _airport.TowerLongitude)
-			: string.Empty;
-		TowerHeightEntry.Text = isPushback
-			? _airport.TowerHeightAgl.ToString("0.###", CultureInfo.InvariantCulture)
-			: "0";
+		TowerPositionEntry.Text = GeoCoordinateParser.Format(_airport.TowerLatitude, _airport.TowerLongitude);
+		TowerHeightEntry.Text = _airport.TowerHeightAgl.ToString("0.###", CultureInfo.InvariantCulture);
 		WindsockPositionEntry.Text = isPushback
 			? string.Empty
 			: GeoCoordinateParser.Format(_airport.WindsockLatitude, _airport.WindsockLongitude);
@@ -193,9 +186,6 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			: isHeliport
 				? "A 4-character heliport has a helipad only."
 				: "Add pushback slots, then drag them on the map. Drag the diamond on the arrow to set heading.";
-		MapHintLabel.Text = located
-			? "Drag a footprint to move it, or the diamond to set heading. Click empty map to release. Tap empty map only places an object that has no position yet."
-			: "Search OSM if needed, then tap the map to place the helipad (airport location).";
 	}
 
 	void RefreshObjectList()
@@ -213,29 +203,32 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 				Title = TitleFor("Helipad", _airport.HelipadLatitude is not null)
 			}
 		};
-		if (HasAirportLocation() && _airport.Kind != AirportKind.Heliport)
+		if (HasAirportLocation())
 		{
 			rows.Add(new MapObjectRow
 			{
 				Id = MapSceneBuilder.TowerId,
 				Title = TitleFor("Tower", _airport.HasTowerPosition)
 			});
-			foreach (var slot in _airport.ParkingSlots)
+			if (_airport.Kind != AirportKind.Heliport)
+			{
+				foreach (var slot in _airport.ParkingSlots)
+				{
+					rows.Add(new MapObjectRow
+					{
+						Id = MapSceneBuilder.ParkingId(slot.Id),
+						Title = TitleFor(slot.Name, slot.Latitude is not null)
+					});
+				}
+			}
+			else
 			{
 				rows.Add(new MapObjectRow
 				{
-					Id = MapSceneBuilder.ParkingId(slot.Id),
-					Title = TitleFor(slot.Name, slot.Latitude is not null)
+					Id = MapSceneBuilder.WindsockId,
+					Title = TitleFor("Windsock", _airport.HasWindsock)
 				});
 			}
-		}
-		else if (HasAirportLocation())
-		{
-			rows.Add(new MapObjectRow
-			{
-				Id = MapSceneBuilder.WindsockId,
-				Title = TitleFor("Windsock", _airport.HasWindsock)
-			});
 		}
 
 		_suppressObjectSelection = true;
@@ -282,7 +275,46 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		_highlightOnMap = true;
 		_selectedId = row.Id;
 		ShowInspector();
-		_ = PushSceneAsync(fit: false);
+		if (_ignoreListPan)
+		{
+			_ignoreListPan = false;
+			return;
+		}
+
+		_ = PushSceneAsync(fit: false, PanToSelected());
+	}
+
+	MapViewState? PanToSelected()
+	{
+		if (_airport is null)
+			return null;
+		double? lat = null;
+		double? lon = null;
+		if (_selectedId == MapSceneBuilder.HelipadId)
+		{
+			lat = _airport.HelipadLatitude;
+			lon = _airport.HelipadLongitude;
+		}
+		else if (_selectedId == MapSceneBuilder.TowerId)
+		{
+			lat = _airport.TowerLatitude;
+			lon = _airport.TowerLongitude;
+		}
+		else if (_selectedId == MapSceneBuilder.WindsockId)
+		{
+			lat = _airport.WindsockLatitude;
+			lon = _airport.WindsockLongitude;
+		}
+		else if (MapSceneBuilder.TryParseParkingId(_selectedId, out var parkingId))
+		{
+			var slot = _airport.ParkingSlots.FirstOrDefault(s => s.Id == parkingId);
+			lat = slot?.Latitude;
+			lon = slot?.Longitude;
+		}
+
+		if (lat is not { } plat || lon is not { } plon)
+			return null;
+		return new MapViewState { Lat = plat, Lon = plon, PanOnly = true };
 	}
 
 	void OnMapMessage(object? sender, HybridWebViewRawMessageReceivedEventArgs e)
@@ -321,6 +353,7 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 				if (!string.IsNullOrEmpty(msg.Id) && HasAirportLocation())
 				{
 					_highlightOnMap = true;
+					_ignoreListPan = true;
 					_selectedId = msg.Id;
 					RefreshObjectList();
 					ShowInspector();
@@ -484,12 +517,6 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			_searchBusy = false;
 		}
 	}
-
-	async void OnZoomIn(object? sender, EventArgs e) => await EvalMapAsync("zoomBy(1)");
-
-	async void OnZoomOut(object? sender, EventArgs e) => await EvalMapAsync("zoomBy(-1)");
-
-	async void OnFitMap(object? sender, EventArgs e) => await EvalMapAsync("fitObjects()");
 
 	async Task PushSceneAsync(bool fit, MapViewState? view = null)
 	{
@@ -655,36 +682,36 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 		double? towerLat = null;
 		double? towerLon = null;
 		var towerHeight = 0d;
+		var towerText = TowerPositionEntry.Text;
+		if (!string.IsNullOrWhiteSpace(towerText))
+		{
+			if (!GeoCoordinateParser.TryParse(towerText, out var parsedTowerLat, out var parsedTowerLon))
+			{
+				error = "Tower position is optional. Tap the map, paste decimal lat, lon, or leave the field empty.";
+				return false;
+			}
+
+			towerLat = parsedTowerLat;
+			towerLon = parsedTowerLon;
+			TowerPositionEntry.Text = GeoCoordinateParser.Format(towerLat, towerLon);
+		}
+
+		var heightText = TowerHeightEntry.Text;
+		if (string.IsNullOrWhiteSpace(heightText))
+			towerHeight = 0;
+		else if (!TryParseDouble(heightText, out towerHeight))
+		{
+			error = "Tower height AGL must be a number (0 = default).";
+			return false;
+		}
+
+		error = ProjectValidator.TowerPlacement(
+			_airport, towerLat, towerLon, towerHeight, lat, lon);
+		if (error is not null)
+			return false;
+
 		if (_airport.Kind != AirportKind.Heliport)
 		{
-			var towerText = TowerPositionEntry.Text;
-			if (!string.IsNullOrWhiteSpace(towerText))
-			{
-				if (!GeoCoordinateParser.TryParse(towerText, out var parsedTowerLat, out var parsedTowerLon))
-				{
-					error = "Tower position is optional. Tap the map, paste decimal lat, lon, or leave the field empty.";
-					return false;
-				}
-
-				towerLat = parsedTowerLat;
-				towerLon = parsedTowerLon;
-				TowerPositionEntry.Text = GeoCoordinateParser.Format(towerLat, towerLon);
-			}
-
-			var heightText = TowerHeightEntry.Text;
-			if (string.IsNullOrWhiteSpace(heightText))
-				towerHeight = 0;
-			else if (!TryParseDouble(heightText, out towerHeight))
-			{
-				error = "Tower height AGL must be a number (0 = default).";
-				return false;
-			}
-
-			error = ProjectValidator.TowerPlacement(
-				_airport, towerLat, towerLon, towerHeight, lat, lon);
-			if (error is not null)
-				return false;
-
 			foreach (var slot in _airport.ParkingSlots)
 			{
 				if (string.IsNullOrWhiteSpace(slot.Name))
@@ -818,10 +845,15 @@ public partial class AirportEditPage : ContentPage, IShellBackHandler
 			return;
 
 		var icao = (IcaoEntry.Text ?? string.Empty).Trim().ToUpperInvariant();
-		var code = _airport.Kind == AirportKind.Heliport
-			? icao
-			: string.IsNullOrEmpty(icao) ? string.Empty : icao + "00";
-		TmeCodeLabel.Text = string.IsNullOrEmpty(code) ? "TME —" : code;
+		if (!ProjectValidator.IsIcao4(icao))
+		{
+			IcaoCaptionLabel.Text = "ICAO (4 chars)";
+			return;
+		}
+
+		IcaoCaptionLabel.Text = _airport.Kind == AirportKind.Heliport
+			? $"ICAO → {icao}"
+			: $"ICAO → {icao}00";
 	}
 
 	async void OnSave(object? sender, EventArgs e)

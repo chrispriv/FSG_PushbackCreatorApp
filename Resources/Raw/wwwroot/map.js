@@ -22,7 +22,12 @@
         center: [20, 0],
         zoom: 2,
         layers: [imagery],
-        zoomControl: true
+        zoomControl: true,
+        touchZoom: true,
+        scrollWheelZoom: true,
+        doubleClickZoom: true,
+        boxZoom: false,
+        bounceAtZoomLimits: false
     });
     L.control.layers({ Imagery: imagery, Streets: streets }, null, { position: "topright" }).addTo(map);
 
@@ -99,63 +104,53 @@
         return null;
     }
 
-    function capturePointer(e) {
-        const oe = e && e.originalEvent;
-        if (!oe || oe.pointerId == null)
-            return;
-        try {
-            map.getContainer().setPointerCapture(oe.pointerId);
-        } catch (ex) { /* WebView2 may not support capture on this event */ }
-    }
-
-    function startMove(item, e) {
-        L.DomEvent.stop(e);
-        selectedId = item.id;
-        send({ type: "select", id: item.id });
+    function freezeMapPan() {
         map.dragging.disable();
-        capturePointer(e);
-        drag = {
-            mode: "move",
-            item: item,
-            moved: false,
-            startX: e.containerPoint ? e.containerPoint.x : 0,
-            startY: e.containerPoint ? e.containerPoint.y : 0,
-            startClientX: e.originalEvent ? e.originalEvent.clientX : 0,
-            startClientY: e.originalEvent ? e.originalEvent.clientY : 0
-        };
-        drawOverlays();
-        drawPreview();
+        if (map.touchZoom)
+            map.touchZoom.disable();
     }
 
-    function startRotate(item, e) {
-        L.DomEvent.stop(e);
-        selectedId = item.id;
-        send({ type: "select", id: item.id });
-        map.dragging.disable();
-        capturePointer(e);
-        drag = {
-            mode: "rotate",
-            item: item,
-            moved: false,
-            startClientX: e.originalEvent ? e.originalEvent.clientX : 0,
-            startClientY: e.originalEvent ? e.originalEvent.clientY : 0
-        };
-        drawOverlays();
-        drawPreview();
+    function unfreezeMapPan() {
+        map.dragging.enable();
+        if (map.touchZoom)
+            map.touchZoom.enable();
     }
 
-    function bindMove(layer, item) {
-        layer.on("mousedown", function (e) {
-            startMove(item, e);
-        });
-        layer.on("click", function (e) {
-            L.DomEvent.stopPropagation(e);
-            if (ignoreClick)
+    function tagLayer(layer, item, role) {
+        const apply = function () {
+            const el = layer.getElement && layer.getElement();
+            if (!el)
                 return;
-            selectedId = item.id;
-            send({ type: "select", id: item.id });
-        });
+            el.setAttribute("data-pca-id", item.id);
+            el.setAttribute("data-pca-role", role);
+        };
+        layer.on("add", apply);
+        overlays.addLayer(layer);
+        apply();
     }
+
+    map.getContainer().addEventListener("pointerdown", function (ev) {
+        if (ev.button != null && ev.button !== 0)
+            return;
+        const hit = ev.target && ev.target.closest && ev.target.closest("[data-pca-id]");
+        if (!hit)
+            return;
+        const item = findItem(hit.getAttribute("data-pca-id"));
+        if (!item)
+            return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        freezeMapPan();
+        selectedId = item.id;
+        drag = {
+            mode: hit.getAttribute("data-pca-role") === "rotate" ? "rotate" : "move",
+            item: item,
+            moved: false,
+            startClientX: ev.clientX,
+            startClientY: ev.clientY
+        };
+        drawPreview();
+    }, true);
 
     function drawOverlays() {
         overlays.clearLayers();
@@ -172,6 +167,7 @@
             const arrowM = headingLength(item);
             const tip = dest(lat, lon, heading, arrowM);
 
+            if (item.kind !== "tower") {
             let shape;
             if (item.kind === "helipad" && item.radiusM > 0) {
                 shape = L.circle([lat, lon], {
@@ -191,8 +187,7 @@
                     fillOpacity: selected ? 0.32 : 0.18
                 });
             }
-            bindMove(shape, item);
-            overlays.addLayer(shape);
+            tagLayer(shape, item, "move");
 
             const left = dest(tip[0], tip[1], heading + 150, Math.max(4, arrowM * 0.22));
             const right = dest(tip[0], tip[1], heading - 150, Math.max(4, arrowM * 0.22));
@@ -201,8 +196,8 @@
                 weight: selected ? 3 : 2,
                 opacity: 0.95
             });
-            bindMove(arrow, item);
-            overlays.addLayer(arrow);
+            tagLayer(arrow, item, "move");
+            }
 
             const moveIcon = L.marker([lat, lon], {
                 zIndexOffset: selected ? 700 : 400,
@@ -211,7 +206,7 @@
                     className: "handle-move",
                     iconSize: [18, 18],
                     iconAnchor: [9, 9],
-                    html: `<div class="handle-move-dot" style="background:${selected ? "#ffffff" : color};"></div>`
+                    html: `<div class="handle-move-dot" data-pca-id="${item.id}" data-pca-role="move" style="background:${selected ? "#ffffff" : color};"></div>`
                 })
             });
             moveIcon.bindTooltip(item.label || item.kind, {
@@ -222,8 +217,7 @@
                 opacity: 0.92,
                 interactive: false
             });
-            bindMove(moveIcon, item);
-            overlays.addLayer(moveIcon);
+            tagLayer(moveIcon, item, "move");
 
             if (selected && canRotate(item)) {
                 const rotateIcon = L.marker(tip, {
@@ -233,7 +227,7 @@
                         className: "handle-rotate",
                         iconSize: [16, 16],
                         iconAnchor: [8, 8],
-                        html: "<div class=\"handle-rotate-dot\"></div>"
+                        html: `<div class="handle-rotate-dot" data-pca-id="${item.id}" data-pca-role="rotate"></div>`
                     })
                 });
                 rotateIcon.bindTooltip("Drag to set heading", {
@@ -243,10 +237,7 @@
                     opacity: 0.92,
                     interactive: false
                 });
-                rotateIcon.on("mousedown", function (e) {
-                    startRotate(item, e);
-                });
-                overlays.addLayer(rotateIcon);
+                tagLayer(rotateIcon, item, "rotate");
             }
         });
     }
@@ -272,9 +263,12 @@
                     bounds.push([item.lat, item.lon]);
             });
 
-            if (scene && scene.view && scene.view.lat != null && scene.view.lon != null) {
-                map.setView([scene.view.lat, scene.view.lon], scene.view.zoom || 16);
-            } else if (scene && scene.fit && bounds.length > 0) {
+            if (!drag && scene && scene.view && scene.view.lat != null && scene.view.lon != null) {
+                if (scene.view.panOnly)
+                    map.panTo([scene.view.lat, scene.view.lon]);
+                else
+                    map.setView([scene.view.lat, scene.view.lon], scene.view.zoom || 16);
+            } else if (!drag && scene && scene.fit && bounds.length > 0) {
                 if (bounds.length === 1)
                     map.setView(bounds[0], 18);
                 else
@@ -283,18 +277,6 @@
         } finally {
             applying = false;
         }
-        return true;
-    };
-
-    window.zoomBy = function zoomBy(delta) {
-        map.setZoom(map.getZoom() + delta);
-        return true;
-    };
-
-    window.fitObjects = function fitObjects() {
-        const b = overlays.getBounds();
-        if (b && b.isValid())
-            map.fitBounds(b, { padding: [28, 28], maxZoom: 19 });
         return true;
     };
 
@@ -309,6 +291,16 @@
         const color = kindColor(item.kind);
         const arrowM = headingLength(item);
         const tip = dest(lat, lon, heading, arrowM);
+        if (item.kind === "tower") {
+            preview.addLayer(L.circleMarker([lat, lon], {
+                radius: 8,
+                color: "#ffffff",
+                weight: 2,
+                fillColor: color,
+                fillOpacity: 1
+            }));
+            return;
+        }
         if (item.kind === "helipad" && item.radiusM > 0) {
             preview.addLayer(L.circle([lat, lon], {
                 radius: item.radiusM,
@@ -370,17 +362,19 @@
     }
 
     function onPointerUp() {
+        unfreezeMapPan();
         if (!drag)
             return;
         const d = drag;
         drag = null;
         preview.clearLayers();
-        map.dragging.enable();
         drawOverlays();
         ignoreClick = true;
         setTimeout(function () { ignoreClick = false; }, 400);
-        if (!d.moved)
+        if (!d.moved) {
+            send({ type: "select", id: d.item.id });
             return;
+        }
         if (d.mode === "move") {
             send({ type: "moved", id: d.item.id, lat: d.item.lat, lon: d.item.lon });
         } else {

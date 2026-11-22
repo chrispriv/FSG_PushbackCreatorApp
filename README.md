@@ -38,9 +38,9 @@ Windows (portable) and Android (APK) builds are on **[Releases](https://github.c
 
 ## Quick start
 
-1. **New**, or **Open TME / Open ZIP** to continue a package.
+1. **New project**, or **Open TME / Open ZIP** to continue a package.
 2. Set the **project package name** (folder inside the TME/ZIP, default `pca_scenery_pushback`).
-3. **New** → pushback airport or heliport → 4-character ICAO, optional map name, helipad position and heading.
+3. **New airport** → pushback airport or heliport → 4-character ICAO, optional map name, helipad position and heading.
 4. On the airport screen, use the **map** to place the helipad and other objects. If there are no coordinates yet, **Find location (OpenStreetMap)** jumps the map; then tap to place. You can still paste decimal coordinates. In Google Earth **Settings**, switch to **decimal** if you paste from Earth.
 5. For pushback airports: **New parking slot**, select it, tap the map. The rectangle is the stand size; the arrow is heading (0 = north).
 6. **Export TME** for FSG and/or **Export ZIP (FS4)** for the PC. **Export KML** is optional, to review or move points in Google Earth.
@@ -119,7 +119,7 @@ These details matter if you compare files with other Aerofly tools.
 
 - Dummy pushback **folders and file names** stay `{icao}00`. TSC/WAD **`[icao]`** is the four-character code plus **two spaces** (for example `[EPWA  ]`) so Aerofly labels the place as `EPWA`. Heliports stay four characters.
 - Optional **`[sname]`** (max 32). Empty input uses the TME code. Heliports also write **`[lname]`** with the same name.
-- Pushback airports may set optional **`[tower_position]`** in both **TSC** (lon/lat) and **WAD** (world units, same conversion as other positions). Tower height AGL **0** skips the dummy `.toc`. Any other height writes `{icao}00.toc` (`container`, scale `0.0001`) next to the `.tsc`/`.wad` and a `cultivation_files` link with **`[auto_height][true]`** and **`[use_height_offset][true]`**. Place-level **`[autoheight][true]`** is always written. Tower coordinates must not match the helipad or a parking slot. **Export KML** includes a **Tower** pin when a tower position is set. Open still accepts a legacy `landrider01` dummy.
+- Pushback airports and heliports may set optional **`[tower_position]`** in both **TSC** (lon/lat) and **WAD** (world units, same conversion as other positions). Tower height AGL **0** skips the dummy `.toc`. Any other height writes the airport `.toc` (`container`, scale `0.0001`) next to the `.tsc`/`.wad` and a `cultivation_files` link with **`[auto_height][true]`** and **`[use_height_offset][true]`**. Place-level **`[autoheight][true]`** is always written. Tower coordinates must not match the helipad or a parking slot. On the map the tower is a point only (no heading or rectangle), so a later XREF tower can use a real footprint. **Export KML** includes a **Tower** pin when a tower position is set. Open still accepts a legacy `landrider01` dummy.
 - Heliports may add optional **windsock** (`airport_windsock_large1`) and **helipad** (`airportmast03`, scale **2.5**, base height **−60.5 m** at the helipad lon/lat). Each has a height offset (± m from 0) for autoheight. XREF `[direction]` uses the WAD heading wrap in degrees (0 = heading 90° east).
 - **Open / Add TME or ZIP:** ICAO from the airport folder or `.tsc` file name (first four characters). Kind is **pushback** if any parking block has `[tags][pushback]`; otherwise **heliport**. The next export always uses this app’s layout. `.wad` is regenerated.
 - **Add TME / Add ZIP** merges airports into the current project; duplicate TME codes are skipped. Package name stays as it is.

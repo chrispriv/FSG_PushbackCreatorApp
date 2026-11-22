@@ -25,14 +25,20 @@ public partial class AirportListPage : ContentPage, IShellBackHandler
 		_pausePackageDirty = false;
 		foreach (var airport in ProjectSession.Current.Airports)
 			airport.NotifyListSummary();
-		AirportList.ItemsSource = null;
-		AirportList.ItemsSource = ProjectSession.Current.Airports;
+		RefreshAirportList();
 	}
 
 	protected override bool OnBackButtonPressed()
 	{
 		_ = OnCancelAsync();
 		return true;
+	}
+
+	void RefreshAirportList()
+	{
+		BindableLayout.SetItemsSource(AirportStack, null);
+		BindableLayout.SetItemsSource(AirportStack, ProjectSession.Current.Airports);
+		EmptyHintLabel.IsVisible = ProjectSession.Current.Airports.Count == 0;
 	}
 
 	void OnPackageNameUnfocused(object? sender, FocusEventArgs e) => ApplyPackageName();
@@ -121,8 +127,7 @@ public partial class AirportListPage : ContentPage, IShellBackHandler
 			if (added > 0)
 				ProjectSession.MarkDirty();
 
-			AirportList.ItemsSource = null;
-			AirportList.ItemsSource = ProjectSession.Current.Airports;
+			RefreshAirportList();
 
 			var other = imported.SkippedCount == 0
 				? string.Empty
@@ -158,6 +163,7 @@ public partial class AirportListPage : ContentPage, IShellBackHandler
 
 		ProjectSession.Current.Airports.Remove(airport);
 		ProjectSession.MarkDirty();
+		RefreshAirportList();
 	}
 
 	async void OnSortAirports(object? sender, EventArgs e)
@@ -190,8 +196,7 @@ public partial class AirportListPage : ContentPage, IShellBackHandler
 			airports.Add(airport);
 
 		ProjectSession.MarkDirty();
-		AirportList.ItemsSource = null;
-		AirportList.ItemsSource = airports;
+		RefreshAirportList();
 	}
 
 	async void OnExportTme(object? sender, EventArgs e) =>
