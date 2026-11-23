@@ -12,7 +12,7 @@ Android versionCode **200**.
 - TGI-style split layout: inspector left / map right (wide), inspector top / map bottom (narrow).
 - Place and move **helipad**, **tower**, **windsock**, and **pushback** objects on the map. Parking uses a heading-aligned rectangle (`size`); helipad uses a circle from **radius** (default 20 m). A **heading arrow** is drawn on placed objects that have a heading.
 - **OpenStreetMap Nominatim** search only until the helipad (airport location) is set; the panel then hides. Tower, parking, windsock (and later XREF) stay unavailable until that location exists.
-- Drag a footprint or the round handle to **move**. Drag the diamond on the heading arrow to set **heading** (helipad, parking, and windsock). The tower is a point only (all-round view, no heading overlay).
+- Drag a footprint or the round handle to **move**. Drag the diamond on the heading arrow to set **heading** (helipad, parking, and windsock). The tower is a point with a pixel grab halo (no heading square). Move/rotate hit targets and the heading arrow are sized for finger use on a tablet.
 - Optional **tower** on heliports, same TSC/WAD/`container` dummy as pushback airports.
 - Helipad **radius** field (before heading); TSC/WAD `[radius]` is imported and exported; the map circle uses that value.
 - Windsock **direction** and **scale factor** (before height offset) for future XREF objects. Map square orientation follows direction; scale sizes the placeholder square. `airportmast03` stays on helipad heading and fixed scale 2.5.
@@ -25,6 +25,7 @@ Android versionCode **200**.
 - Home screen Google Earth note: **Export KML**, plus optional decimal copy/paste after Google Earth **Settings → decimal**.
 - Heliport name caption is **Optional** (short enough for phone portrait).
 - Project screen export button is **Export TME (FSG)**, matching **Export ZIP (FS4)**.
+- Map zoom goes to level **21** (imagery tiles stay native to 18; extra levels enlarge for a small phone). On a tablet, pinch and **+ / −** are enough without extra zoom. **Windows** uses the mouse wheel to zoom. Android emulator mouse wheel is unreliable; use pinch or **+ / −** on a device.
 - Windows **Export** picks a **folder** (same idea as Mac) and writes `{package}.tme` / `.zip` / `.kml` there. Save no longer navigates into a highlighted subfolder; an existing file in that folder asks before replace.
 
 ## [1.3.0] — 2026-11-15

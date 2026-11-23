@@ -7,7 +7,7 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
-		HybridWebViewHandler.Mapper.AppendToMapping("PcaLeafletGestures", (handler, _) =>
+		HybridWebViewHandler.Mapper.AppendToMapping("PcaLeafletGestures", (handler, view) =>
 		{
 #if ANDROID
 			var web = handler.PlatformView;
@@ -16,6 +16,11 @@ public static class MauiProgram
 			web.Settings.DisplayZoomControls = false;
 			web.Settings.UseWideViewPort = true;
 			web.Settings.LoadWithOverviewMode = true;
+			web.OverScrollMode = Android.Views.OverScrollMode.Never;
+			web.VerticalScrollBarEnabled = false;
+			web.HorizontalScrollBarEnabled = false;
+			web.NestedScrollingEnabled = false;
+			web.SetOnGenericMotionListener(new PcaMapWheelListener(view));
 #endif
 #if WINDOWS
 			if (handler.PlatformView is Microsoft.UI.Xaml.Controls.WebView2 webView2)
@@ -46,4 +51,37 @@ public static class MauiProgram
 
 		return builder.Build();
 	}
+
+#if ANDROID
+	sealed class PcaMapWheelListener : Java.Lang.Object, Android.Views.View.IOnGenericMotionListener
+	{
+		readonly WeakReference<IHybridWebView> _map;
+		long _lastZoomMs;
+
+		public PcaMapWheelListener(IHybridWebView map) => _map = new WeakReference<IHybridWebView>(map);
+
+		public bool OnGenericMotion(Android.Views.View? v, Android.Views.MotionEvent? e)
+		{
+			if (e is null || e.Action != Android.Views.MotionEventActions.Scroll)
+				return false;
+
+			var dy = e.GetAxisValue(Android.Views.Axis.Vscroll);
+			if (Math.Abs(dy) < 0.01f)
+				dy = e.GetAxisValue(Android.Views.Axis.Hscroll);
+			if (Math.Abs(dy) < 0.01f)
+				return false;
+
+			var now = Java.Lang.JavaSystem.CurrentTimeMillis();
+			if (now - _lastZoomMs >= 80 && _map.TryGetTarget(out var map))
+			{
+				_lastZoomMs = now;
+				var step = dy > 0 ? -1 : 1;
+				MainThread.BeginInvokeOnMainThread(() =>
+					_ = map.EvaluateJavaScriptAsync($"window.pcaZoomBy&&window.pcaZoomBy({step})"));
+			}
+
+			return true;
+		}
+	}
+#endif
 }

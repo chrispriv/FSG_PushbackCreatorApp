@@ -6,30 +6,69 @@
         parking: "#22c55e"
     };
 
+    const maxMapZoom = 21;
+    const moveHitPx = 36;
+    const rotateHitPx = 40;
+
     const imagery = L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         {
-            maxZoom: 19,
+            maxZoom: maxMapZoom,
             maxNativeZoom: 18,
             attribution: "Tiles © Esri — Esri, Maxar, Earthstar Geographics"
         });
     const streets = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
+        maxZoom: maxMapZoom,
+        maxNativeZoom: 19,
         attribution: "© OpenStreetMap"
     });
 
+    const androidMap = /Android/i.test(navigator.userAgent);
     const map = L.map("map", {
         center: [20, 0],
         zoom: 2,
+        maxZoom: maxMapZoom,
         layers: [imagery],
         zoomControl: true,
         touchZoom: true,
-        scrollWheelZoom: true,
+        scrollWheelZoom: !androidMap,
         doubleClickZoom: true,
         boxZoom: false,
         bounceAtZoomLimits: false
     });
     L.control.layers({ Imagery: imagery, Streets: streets }, null, { position: "topright" }).addTo(map);
+
+    window.pcaZoomBy = function (step) {
+        const n = Number(step);
+        if (!n)
+            return;
+        const next = Math.max(map.getMinZoom(), Math.min(maxMapZoom, map.getZoom() + n));
+        if (next !== map.getZoom())
+            map.setZoom(next);
+    };
+
+    if (androidMap) {
+        let wheelLock = 0;
+        window.addEventListener("wheel", function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            const now = Date.now();
+            if (now - wheelLock < 80)
+                return;
+            wheelLock = now;
+            const dy = ev.deltaY !== 0 ? ev.deltaY : ev.deltaX;
+            if (!dy)
+                return;
+            const step = dy > 0 ? -1 : 1;
+            const next = Math.max(map.getMinZoom(), Math.min(maxMapZoom, map.getZoom() + step));
+            if (next === map.getZoom())
+                return;
+            if (ev.clientX != null && ev.clientY != null)
+                map.setZoomAround(map.mouseEventToLatLng(ev), next);
+            else
+                map.setZoom(next);
+        }, { passive: false, capture: true });
+    }
 
     const overlays = L.layerGroup().addTo(map);
     const preview = L.layerGroup().addTo(map);
@@ -83,9 +122,9 @@
 
     function headingLength(item) {
         if (item.kind === "helipad" && item.radiusM > 0)
-            return item.radiusM * 1.15;
+            return Math.max(item.radiusM * 1.55, 28);
         const lengthM = item.lengthM > 0 ? item.lengthM : 12;
-        return Math.max(lengthM * 0.7, 10);
+        return Math.max(lengthM * 0.85, 28);
     }
 
     function kindColor(kind) {
@@ -167,36 +206,45 @@
             const arrowM = headingLength(item);
             const tip = dest(lat, lon, heading, arrowM);
 
-            if (item.kind !== "tower") {
-            let shape;
-            if (item.kind === "helipad" && item.radiusM > 0) {
-                shape = L.circle([lat, lon], {
-                    radius: item.radiusM,
+            if (item.kind === "tower") {
+                const halo = L.circleMarker([lat, lon], {
+                    radius: 16,
                     color: selected ? "#ffffff" : color,
-                    weight: selected ? 3 : 2,
+                    weight: 2,
                     fillColor: color,
-                    fillOpacity: selected ? 0.28 : 0.16
+                    fillOpacity: selected ? 0.35 : 0.18
                 });
+                tagLayer(halo, item, "move");
             } else {
-                const lengthM = item.lengthM > 0 ? item.lengthM : 12;
-                const widthM = item.widthM > 0 ? item.widthM : 8;
-                shape = L.polygon(rectangleLatLngs(lat, lon, heading, lengthM, widthM), {
+                let shape;
+                if (item.kind === "helipad" && item.radiusM > 0) {
+                    shape = L.circle([lat, lon], {
+                        radius: item.radiusM,
+                        color: selected ? "#ffffff" : color,
+                        weight: selected ? 3 : 2,
+                        fillColor: color,
+                        fillOpacity: selected ? 0.28 : 0.16
+                    });
+                } else {
+                    const lengthM = item.lengthM > 0 ? item.lengthM : 12;
+                    const widthM = item.widthM > 0 ? item.widthM : 8;
+                    shape = L.polygon(rectangleLatLngs(lat, lon, heading, lengthM, widthM), {
+                        color: selected ? "#ffffff" : color,
+                        weight: selected ? 3 : 2,
+                        fillColor: color,
+                        fillOpacity: selected ? 0.32 : 0.18
+                    });
+                }
+                tagLayer(shape, item, "move");
+
+                const left = dest(tip[0], tip[1], heading + 150, Math.max(4, arrowM * 0.22));
+                const right = dest(tip[0], tip[1], heading - 150, Math.max(4, arrowM * 0.22));
+                const arrow = L.polyline([[lat, lon], tip, left, tip, right], {
                     color: selected ? "#ffffff" : color,
                     weight: selected ? 3 : 2,
-                    fillColor: color,
-                    fillOpacity: selected ? 0.32 : 0.18
+                    opacity: 0.95
                 });
-            }
-            tagLayer(shape, item, "move");
-
-            const left = dest(tip[0], tip[1], heading + 150, Math.max(4, arrowM * 0.22));
-            const right = dest(tip[0], tip[1], heading - 150, Math.max(4, arrowM * 0.22));
-            const arrow = L.polyline([[lat, lon], tip, left, tip, right], {
-                color: selected ? "#ffffff" : color,
-                weight: selected ? 3 : 2,
-                opacity: 0.95
-            });
-            tagLayer(arrow, item, "move");
+                tagLayer(arrow, item, "move");
             }
 
             const moveIcon = L.marker([lat, lon], {
@@ -204,9 +252,9 @@
                 keyboard: false,
                 icon: L.divIcon({
                     className: "handle-move",
-                    iconSize: [18, 18],
-                    iconAnchor: [9, 9],
-                    html: `<div class="handle-move-dot" data-pca-id="${item.id}" data-pca-role="move" style="background:${selected ? "#ffffff" : color};"></div>`
+                    iconSize: [moveHitPx, moveHitPx],
+                    iconAnchor: [moveHitPx / 2, moveHitPx / 2],
+                    html: `<div class="handle-move-hit" data-pca-id="${item.id}" data-pca-role="move"><div class="handle-move-dot" style="background:${selected ? "#ffffff" : color};"></div></div>`
                 })
             });
             moveIcon.bindTooltip(item.label || item.kind, {
@@ -225,9 +273,9 @@
                     keyboard: false,
                     icon: L.divIcon({
                         className: "handle-rotate",
-                        iconSize: [16, 16],
-                        iconAnchor: [8, 8],
-                        html: `<div class="handle-rotate-dot" data-pca-id="${item.id}" data-pca-role="rotate"></div>`
+                        iconSize: [rotateHitPx, rotateHitPx],
+                        iconAnchor: [rotateHitPx / 2, rotateHitPx / 2],
+                        html: `<div class="handle-rotate-hit" data-pca-id="${item.id}" data-pca-role="rotate"><div class="handle-rotate-dot"></div></div>`
                     })
                 });
                 rotateIcon.bindTooltip("Drag to set heading", {
@@ -270,9 +318,9 @@
                     map.setView([scene.view.lat, scene.view.lon], scene.view.zoom || 16);
             } else if (!drag && scene && scene.fit && bounds.length > 0) {
                 if (bounds.length === 1)
-                    map.setView(bounds[0], 18);
+                    map.setView(bounds[0], 19);
                 else
-                    map.fitBounds(bounds, { padding: [28, 28], maxZoom: 19 });
+                    map.fitBounds(bounds, { padding: [28, 28], maxZoom: maxMapZoom });
             }
         } finally {
             applying = false;
@@ -293,11 +341,11 @@
         const tip = dest(lat, lon, heading, arrowM);
         if (item.kind === "tower") {
             preview.addLayer(L.circleMarker([lat, lon], {
-                radius: 8,
+                radius: 16,
                 color: "#ffffff",
                 weight: 2,
                 fillColor: color,
-                fillOpacity: 1
+                fillOpacity: 0.45
             }));
             return;
         }

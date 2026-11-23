@@ -54,10 +54,10 @@ The airport screen is a **map workspace** (same split as TGI Model Transformer: 
 
 1. If the airport has **no coordinates yet**, **Find location (OpenStreetMap)** is shown: search for the airport name or ICAO, pick a result to jump the map, then **tap the map** to place the **helipad** (airport location). After that the search panel hides.
 2. Other objects (tower, windsock, pushback slots, later XREF) are available only after the helipad is set.
-3. **Drag** the footprint or the round handle to move. Drag the **diamond** at the arrow tip to set **heading** (0 = north, clockwise) for helipad, parking, and windsock. Helipad heading and windsock **direction** are written back to the inspector. Selecting an object in the **list** pans the map to it; selecting it **on the map** keeps the current view.
+3. **Drag** the footprint or the round handle to move. Drag the **diamond** at the arrow tip to set **heading** (0 = north, clockwise) for helipad, parking, and windsock. Helipad heading and windsock **direction** are written back to the inspector. The **tower** is a point with a grab ring (no heading). Selecting an object in the **list** pans the map to it; selecting it **on the map** keeps the current view.
 4. Helipad overlay is a **circle** using the helipad radius (default 20 m). Pushback overlays are **rectangles** from parking size. The windsock is a placeholder square (no real XREF footprint yet) rotated from its **direction**; **scale factor** sizes that square. You can still paste **decimal** coordinates into the inspector fields.
 
-Imagery tiles are **Esri World Imagery** (XYZ, no app API key). Switch the layer control to **Streets** (OpenStreetMap) if you need labels. Zoom with the map **+ / −** or **pinch** (two fingers) on a phone or a touch PC. An internet connection is required for tiles and OSM search.
+Imagery tiles are **Esri World Imagery** (XYZ, no app API key). Switch the layer control to **Streets** (OpenStreetMap) if you need labels. Zoom with **pinch** (two fingers) or the map **+ / −**. A tablet usually does not need extra zoom. On a small phone you can go up to level **21** (tiles stay sharp to 18, then enlarge). On **Windows**, the mouse wheel zooms. An internet connection is required for tiles and OSM search.
 
 Google Earth is optional (KML export, or paste instead of the map):
 
@@ -85,13 +85,13 @@ For each pushback stand:
 
 ### FSG Mobile
 
-1. Export **TME**.
+1. Export **TME (FSG)**.
 2. On Android, the file is in **Downloads** (a file with the same name is overwritten).
 3. Copy `*.tme` into the FSG extra-content folder. A file manager that can see app data, or USB from a PC, is typical. Path shape:
 
    `Android/data/com.aerofly.aeroflyfsg1/files/`
 
-4. Restart FSG. Find the place on the location map (dummy codes look like `EPWA` in the sim; the files are still `epwa00`). Heliport XREF objects live in the TME under `scenery/poi/`.
+4. Restart FSG. Find the place on the location map (dummy codes look like `EPWA` in the sim; the files are still `epwa00`). XREF objects (windsock, helipad object, tower dummy) live in the TME under `scenery/poi/` with an ETC2 `pca_anchor.ttx`.
 
 ### Aerofly FS 4 PC
 

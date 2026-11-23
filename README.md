@@ -41,8 +41,8 @@ Windows (portable) and Android (APK) builds are on **[Releases](https://github.c
 1. **New project**, or **Open TME / Open ZIP** to continue a package.
 2. Set the **project package name** (folder inside the TME/ZIP, default `pca_scenery_pushback`).
 3. **New airport** → pushback airport or heliport → 4-character ICAO, optional map name, helipad position and heading.
-4. On the airport screen, use the **map** to place the helipad and other objects. If there are no coordinates yet, **Find location (OpenStreetMap)** jumps the map; then tap to place. You can still paste decimal coordinates. **Export KML** reviews the project in Google Earth.
-5. For pushback airports: **New parking slot**, select it, tap the map. The rectangle is the stand size; the arrow is heading (0 = north).
+4. On the airport screen, use the **map** to place the helipad and other objects. If there are no coordinates yet, **Find location (OpenStreetMap)** jumps the map; then tap to place. You can still paste decimal coordinates. Drag footprints to move; drag the diamond on the heading arrow to set heading. Zoom with pinch or **+ / −** (up to 21 on a small phone). **Export KML** reviews the project in Google Earth.
+5. For pushback airports: **New parking slot**, select it, tap the map. The rectangle is the stand size; the arrow is heading (0 = north). Optional **tower** height writes a POI dummy (`container`) with terrain autoheight.
 6. **Export TME (FSG)** and/or **Export ZIP (FS4)** for the PC. **Export KML** is optional, to review or move points in Google Earth.
 7. Copy the TME into FSG extra content, or unpack the FS4 zip into `addons\scenery`. Details: [GUIDE.md](GUIDE.md).
 
@@ -57,6 +57,8 @@ Windows (portable) and Android (APK) builds are on **[Releases](https://github.c
 **FS4 (PC):** unpack the zip so you get:
 
 `Documents\Aerofly FS 4\addons\scenery\{package}\airports\{code}\`
+
+Heliport windsock / helipad object / tower dummy, and a pushback tower dummy, unpack under `{package}\poi\…` (TME: `scenery/poi/`). The POI uses a buried `pca_anchor` mesh so autoheight follows terrain.
 
 Restart the simulator after copying files.
 
@@ -120,7 +122,7 @@ These details matter if you compare files with other Aerofly tools.
 - Dummy pushback **folders and file names** stay `{icao}00`. TSC/WAD **`[icao]`** is the four-character code plus **two spaces** (for example `[EPWA  ]`) so Aerofly labels the place as `EPWA`. Heliports stay four characters.
 - Optional **`[sname]`** (max 32). Empty input uses the TME code. Heliports also write **`[lname]`** with the same name.
 - Pushback airports and heliports may set optional **`[tower_position]`** in TSC/WAD. Tower height AGL **0** skips the dummy. Any other height writes a **POI** cultivation (`container`, scale `0.0001`) with terrain autoheight, not an airport-folder `.toc`. Place-level **`[autoheight][true]`** is always written on the TSC. Tower coordinates must not match the helipad or a parking slot. On the map the tower is a point only. **Export KML** includes a **Tower** pin when a tower position is set. Open still accepts a legacy `landrider01` dummy and a legacy airport `.toc`.
-- Heliports may add optional **windsock** (`airport_windsock_large1`), **helipad object** (`airportmast03`, scale **2.5**, base height **−60.5 m**), and a tower dummy. All of these XREFs (and the pushback tower dummy) export as a **POI** under `scenery/poi/{grid}_pca_{code}/` (TME) or `{package}/poi/…` (FS4 ZIP): `.tsl` with buried `pca_anchor.tmb` / `pca_anchor.ttx` (ETC2 in TME for FSG, DXT1 in ZIP for FS4) and a `.toc`. Airport TSC has no `cultivation_files` link. Windsock has its own XREF **direction** (0 = east) and **scale factor** (default 1). Helipad **radius** is still in TSC/WAD (default 20).
+- Heliports may add optional **windsock** (`airport_windsock_large1`), **helipad object** (`airportmast03`, scale **2.5**, base height **−60.5 m**), and a tower dummy. All of these XREFs (and the pushback tower dummy) export as a **POI** under `scenery/poi/{grid}_pca_{code}/` (TME) or `{package}/poi/…` (FS4 ZIP): `.tsl` with buried `pca_anchor.tmb` / `pca_anchor.ttx` (**ETC2** in the TME for FSG OpenGL/Vulkan, **DXT1** in the ZIP for FS4 PC/Mac) and a `.toc`. Airport TSC has no `cultivation_files` link. Windsock has its own XREF **direction** (0 = east) and **scale factor** (default 1). Helipad **radius** is still in TSC/WAD (default 20). On the map the tower is a point with a grab halo; later small XREF objects can use the same idea.
 - **Open / Add TME or ZIP:** ICAO from the airport folder or `.tsc` file name (first four characters). Kind is **pushback** if any parking block has `[tags][pushback]`; otherwise **heliport**. The next export always uses this app’s layout. `.wad` is regenerated.
 - **Add TME / Add ZIP** merges airports into the current project; duplicate TME codes are skipped. Package name stays as it is.
 - **Sort A–Z** on the airport list orders airports by ICAO (TME code). Open TME/ZIP keeps archive order; new or merged airports stay at the end until you sort.
