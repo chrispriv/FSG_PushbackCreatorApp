@@ -105,15 +105,17 @@ For each pushback stand:
 
 **One airport mod per ICAO:** Aerofly loads only **one** extra airport package for a given ICAO code at a time (for example one `EPWA00`). A second TME or scenery folder for the same airport is ignored and does not appear. Keep a single package for that ICAO, or merge airports into one project with **Add TME / Add ZIP** and export once.
 
-## 7. Correct positions in Google Earth
+## 7. Google Earth (optional)
 
-After a first export you can refine points:
+Map positions in the app are already accurate enough for scenery work. Google Earth is optional: to **look at** the project, or as an **alternative to the map** if you prefer to move markers there and paste coordinates back.
 
-1. **Export KML** and open it in Google Earth (folders per airport: **Helipad H01**, **Tower** / **Windsock** when set, and **Pushback …**).
-2. Move the markers, copy the new coordinates back into the matching airport or parking fields, then **Save**.
-3. Export TME / ZIP again and copy the files into the simulator.
+**Before you copy any coordinates:** in Google Earth **Settings**, set the coordinate format to **decimal**. The app accepts **decimal only** (`40.4675, 50.0539` or `40.4675 50.0539`, latitude first). Degrees/minutes/seconds are not parsed. Google Earth DMS is rounded and would shift positions.
 
-You can also keep using your own named Google Earth markers the same way, without KML.
+1. **Export KML** on the project screen and open `{package}.kml` in Google Earth. Each airport is a folder (**Helipad H01**, **Tower** / **Windsock** when set, **Pushback …**).
+2. To change a point without using the in-app map: move the marker in Earth, copy the **decimal** coordinates into the matching inspector field, then **Save**.
+3. If you also need the files in the simulator, export **TME (FSG)** / **ZIP (FS4)** again.
+
+You can use your own named Google Earth markers the same way, without KML. If the first pasted number is outside ±90 it is treated as TSC lon, lat.
 
 ## 8. Tips
 

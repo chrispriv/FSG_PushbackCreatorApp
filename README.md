@@ -4,7 +4,7 @@ A .NET MAUI 9 app to add **extra pushback parking** and **helipads** for [Aerofl
 
 The same project can be exported as:
 
-- **TME** — FSG extra-content package (Unix Store zip)
+- **TME (FSG)** — FSG extra-content package (Unix Store zip)
 - **ZIP (FS4)** — scenery zip to unpack into `addons\scenery`
 - **KML** — Google Earth check of all helipad and pushback positions
 
@@ -14,8 +14,6 @@ Current version: **2.0.0** (development, branch `2.0-devl`). Android package id 
 | --- | --- |
 | [GUIDE.md](GUIDE.md) | Step-by-step use, coordinates, install into FSG / FS4 |
 | [CHANGELOG.md](CHANGELOG.md) | What changed in each version |
-
-UI, this README, the guide, and the changelog are in **English**.
 
 ## What it does
 
